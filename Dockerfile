@@ -1,26 +1,31 @@
-# Dockerfile for CodeGuard AI Enterprise
+FROM node:20-alpine AS base
 
-# Base image
-FROM python:3.10-slim
+# Install Python and dependencies for FastAPI
+RUN apk add --no-cache python3 py3-pip build-base python3-dev
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Set working directory
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Copy source code
-COPY src/ /app/src/
-COPY assets/ /app/assets/
+COPY . .
 
-# Expose ports for FastAPI (8000) and Streamlit (8501)
+# Install Python deps
+COPY api/requirements.txt ./
+RUN pip install -r requirements.txt
+
+# Build Next.js
+RUN npm run build
+
+# Start Script to run both FastAPI and Next.js for deployment (e.g. Render)
+RUN echo '#!/bin/sh' > start.sh && \
+    echo 'uvicorn api.main:app --host 0.0.0.0 --port 8000 &' >> start.sh && \
+    echo 'PORT=10000 npm start' >> start.sh && \
+    chmod +x start.sh
+
+EXPOSE 10000
 EXPOSE 8000
-EXPOSE 8501
 
-# Copy a startup script
-COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
-
-# Command to run both services
-CMD ["/app/start.sh"]
+CMD ["./start.sh"]
