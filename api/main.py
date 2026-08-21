@@ -34,6 +34,10 @@ class UploadResponse(BaseModel):
 def read_root():
     return {"message": "TestGen AI Pro API"}
 
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
 @app.post("/api/upload", response_model=UploadResponse)
 async def upload_pdf(file: UploadFile = File(...), db: Session = Depends(database.get_db)):
     if not file.filename.endswith('.pdf'):
