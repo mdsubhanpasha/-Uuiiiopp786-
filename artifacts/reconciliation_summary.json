@@ -1,0 +1,95 @@
+{
+  "timestamp": "2026-08-22T11:14:57.504252",
+  "summary": {
+    "total_ledger_records": 7,
+    "total_bank_records": 6,
+    "matched_count": 0,
+    "discrepancy_count": 3,
+    "anomaly_count": 0,
+    "high_risk_count": 2,
+    "total_ledger_amount": 206700.49,
+    "total_bank_amount": 107600.5
+  },
+  "discrepancies": [
+    {
+      "discrepancy_id": "DISC-0001",
+      "ledger_txn_id": "TXN-1004",
+      "bank_txn_id": "BANK-9004",
+      "discrepancy_type": "AMOUNT_MISMATCH",
+      "ledger_amount": 1200.0,
+      "bank_amount": 1250.0,
+      "amount_difference": 50.0,
+      "is_anomaly": false,
+      "anomaly_score": -0.1346,
+      "details": "Ref 'REF-9874' matched but amount differs: Ledger=$1200.00 vs Bank=$1250.00"
+    },
+    {
+      "discrepancy_id": "DISC-0002",
+      "ledger_txn_id": "TXN-1006",
+      "bank_txn_id": "BANK-9006",
+      "discrepancy_type": "AMOUNT_MISMATCH",
+      "ledger_amount": 99999.99,
+      "bank_amount": 1000.0,
+      "amount_difference": 98999.99,
+      "is_anomaly": false,
+      "anomaly_score": -0.0065,
+      "details": "Ref 'REF-9876' matched but amount differs: Ledger=$99999.99 vs Bank=$1000.00"
+    },
+    {
+      "discrepancy_id": "DISC-0003",
+      "ledger_txn_id": "TXN-1007",
+      "bank_txn_id": null,
+      "discrepancy_type": "UNMATCHED_LEDGER_ENTRY",
+      "ledger_amount": 150.0,
+      "bank_amount": null,
+      "amount_difference": 150.0,
+      "is_anomaly": false,
+      "anomaly_score": -0.0661,
+      "details": "Ledger record TXN-1007 for vendor 'Starbucks Coffee' amount $150.00 has no bank entry."
+    }
+  ],
+  "forensic_audit_results": [
+    {
+      "discrepancy_id": "DISC-0001",
+      "risk_level": "High",
+      "confidence_score": 0.95,
+      "root_cause_explanation": "High-risk pattern detected for 'Unknown Wire'. Transaction value difference of $50.00.",
+      "recommended_action": "Freeze funds, flag transaction for executive AML review, and initiate SAR filing.",
+      "cot_reasoning_trace": [
+        "[Step 1: Observation] Discrepancy 'DISC-0001' (AMOUNT_MISMATCH).",
+        "[Step 2: Context] Diff: $50.00, Anom: False.",
+        "[Step 3: Tool] `lookup_vendor_sanction` for 'Unknown Wire'.",
+        "[Step 4: CoT] High threshold or sanction entity flag.",
+        "[Step 5: Conclusion] Risk Level: High."
+      ]
+    },
+    {
+      "discrepancy_id": "DISC-0002",
+      "risk_level": "Critical",
+      "confidence_score": 0.95,
+      "root_cause_explanation": "High-risk pattern detected for 'Offshore Entity X'. Transaction value difference of $98,999.99.",
+      "recommended_action": "Freeze funds, flag transaction for executive AML review, and initiate SAR filing.",
+      "cot_reasoning_trace": [
+        "[Step 1: Observation] Discrepancy 'DISC-0002' (AMOUNT_MISMATCH).",
+        "[Step 2: Context] Diff: $98999.99, Anom: False.",
+        "[Step 3: Tool] `lookup_vendor_sanction` for 'Offshore Entity X'.",
+        "[Step 4: CoT] High threshold or sanction entity flag.",
+        "[Step 5: Conclusion] Risk Level: Critical."
+      ]
+    },
+    {
+      "discrepancy_id": "DISC-0003",
+      "risk_level": "Low",
+      "confidence_score": 0.95,
+      "root_cause_explanation": "Timing difference between ledger and bank clearing.",
+      "recommended_action": "Monitor upcoming bank settlement cycles; confirm wire status.",
+      "cot_reasoning_trace": [
+        "[Step 1: Observation] Discrepancy 'DISC-0003' (UNMATCHED_LEDGER_ENTRY).",
+        "[Step 2: Context] Diff: $150.00, Anom: False.",
+        "[Step 3: Tool] `lookup_vendor_sanction` for 'Starbucks Coffee'.",
+        "[Step 4: CoT] Entry for 'Starbucks Coffee' pending bank clearance.",
+        "[Step 5: Conclusion] Risk Level: Low."
+      ]
+    }
+  ]
+}

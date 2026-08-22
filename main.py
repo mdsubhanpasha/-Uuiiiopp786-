@@ -1,140 +1,180 @@
-"""OmniRAG-Ops CLI and Demonstration Entry Point.
+"""FinAgent-Ops: Autonomous Multi-Agent Financial Reconciliation Engine.
 
-Provides a CLI interface to query individual RAG paradigms, auto-route
-requests, or run comparative benchmarks across all 5 paradigms.
+Provides FastAPI Web Service API endpoints and CLI mode execution.
 """
 
 import argparse
 import json
-import sys
+import os
 
-from src.agentic_rag import AgenticRAG
-from src.corrective_rag import CorrectiveRAG
-from src.graph_rag import GraphRAG
-from src.hybrid_rag import HybridRAG
-from src.naive_rag import NaiveRAG
-from src.router import RAGRouter
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+import uvicorn
+
+from scripts.github_deploy import GitHubDeployer
+from scripts.linkedin_poster import LinkedInPoster
+from src.graph_orchestrator import FinAgentOrchestrator
+from src.models import (
+    DeployRequest,
+    DeployResponse,
+    ReconcileRequest,
+    ReconcileResponse,
+)
+
+app = FastAPI(
+    title="FinAgent-Ops API",
+    description=(
+        "Autonomous Multi-Agent Financial Reconciliation & Fraud "
+        "Detection Engine"
+    ),
+    version="1.0.0",
+)
+
+
+@app.get("/health")
+def health_check() -> dict[str, str]:
+    """Health check REST endpoint."""
+    return {"status": "healthy", "service": "FinAgent-Ops"}
+
+
+@app.post("/api/v1/reconcile", response_model=ReconcileResponse)
+def api_reconcile(req: ReconcileRequest) -> ReconcileResponse:
+    """Trigger multi-agent financial reconciliation and audit workflow."""
+    l_path = req.ledger_csv_path or "data/sample_ledger.csv"
+    b_path = req.bank_csv_path or "data/bank_statement.csv"
+
+    if not os.path.exists(l_path):
+        raise HTTPException(
+            status_code=404, detail=f"Ledger file not found at {l_path}"
+        )
+    if not os.path.exists(b_path):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Bank statement file not found at {b_path}",
+        )
+
+    orchestrator = FinAgentOrchestrator()
+    final_state = orchestrator.run(l_path, b_path)
+
+    return ReconcileResponse(
+        status="success",
+        summary=final_state.get("report_summary", {}),
+        discrepancy_count=len(final_state.get("discrepancies", [])),
+        audit_results=final_state.get("audit_results", []),
+        pdf_report_path=final_state.get("pdf_report_path"),
+    )
+
+
+@app.get("/api/v1/reports/pdf")
+def get_pdf_report(
+    path: str = "artifacts/reconciliation_report.pdf",
+) -> FileResponse:
+    """Download generated PDF audit report."""
+    if not os.path.exists(path):
+        raise HTTPException(
+            status_code=404, detail=f"PDF Report not found at {path}"
+        )
+    return FileResponse(
+        path,
+        media_type="application/pdf",
+        filename="reconciliation_report.pdf",
+    )
+
+
+@app.post("/api/v1/deploy/github", response_model=DeployResponse)
+def deploy_github(req: DeployRequest) -> DeployResponse:
+    """Automate GitHub code commit and push."""
+    deployer = GitHubDeployer()
+    res = deployer.deploy(
+        commit_message=req.commit_message or "Deploy FinAgent-Ops release",
+        dry_run=req.dry_run,
+    )
+    return DeployResponse(status=res["status"], details=res)
+
+
+@app.post("/api/v1/deploy/linkedin", response_model=DeployResponse)
+def deploy_linkedin(req: DeployRequest) -> DeployResponse:
+    """Automate technical post announcement publishing on LinkedIn."""
+    poster = LinkedInPoster()
+    res = poster.publish_post(dry_run=req.dry_run)
+    return DeployResponse(status=res["status"], details=res)
 
 
 def print_banner() -> None:
-    """Print OmniRAG-Ops ASCII Banner."""
+    """Print ASCII System Banner."""
     banner = (
         "=" * 80 + "\n"
-        "             OMNIRAG-OPS: ENTERPRISE MULTI-TIER RETRIEVAL ENGINE\n"
+        "   FINAGENT-OPS: AUTONOMOUS MULTI-AGENT FINANCIAL RECONCILIATION\n"
         + "=" * 80 + "\n"
-        "Paradigms: [1] Naive RAG | [2] Hybrid RAG | [3] Graph RAG | "
-        "[4] Corrective RAG | [5] Agentic RAG\n"
+        "Agents: Ingestion -> Recon (ML) -> Forensic Audit (CoT) -> Report\n"
         + "-" * 80 + "\n"
     )
     print(banner)
 
 
-def run_demo() -> None:
-    """Execute demonstration queries showcasing all 5 RAG paradigms."""
+def run_cli_mode(ledger_path: str, bank_path: str) -> None:
+    """Run CLI workflow execution."""
     print_banner()
-    corpus_file = "data/sample_corpus.json"
-    router = RAGRouter(corpus_path=corpus_file)
+    print(f"[+] Processing Ledger: {ledger_path}")
+    print(f"[+] Processing Bank Statement: {bank_path}\n")
 
-    sample_queries = [
-        ("Simple Semantic Vector Search",
-         "What is Kubernetes and container orchestration?"),
-        ("Hybrid Keyword + Dense Search",
-         "Explain BM25 lexical ranking with FAISS vector similarity"),
-        ("Multi-Hop Graph Entity Search",
-         "How is Istio related to Zero Trust security topology?"),
-        ("Corrective RAG Evaluator & Fallback",
-         "Verify latest updates on cloud security compliance for 2025"),
-        ("Agentic Multi-Turn Reasoning",
-         "Decompose complex architecture requirements step by step"),
-    ]
+    orchestrator = FinAgentOrchestrator()
+    final_state = orchestrator.run(ledger_path, bank_path)
 
-    print("\n[+] RUNNING AUTOMATIC ROUTER DEMO ON SAMPLE QUERIES:\n")
-    for category, query in sample_queries:
-        print(f"\n--- Category: {category} ---")
-        print(f"Query: '{query}'")
-        res = router.route_and_execute(query)
-        print(f"Selected Engine: {res['selected_paradigm']}")
-        print(f"Routing Reason:  {res['routing_reasoning']}")
-        print(f"Execution Time:  {res['latency_ms']} ms")
-        print("-" * 60)
-        print(res["engine_output"]["response"])
-        print("=" * 80)
+    print("\n" + "=" * 80)
+    print("WORKFLOW STATE TRANSITION LOGS:")
+    for msg in final_state.get("messages", []):
+        print(f"  {msg}")
+
+    print("\n" + "=" * 80)
+    print("EXECUTIVE SUMMARY:")
+    print(json.dumps(final_state.get("report_summary", {}), indent=2))
+
+    print("\n" + "=" * 80)
+    print("FORENSIC AUDIT DISCREPANCY LOGS:")
+    print(json.dumps(final_state.get("audit_results", []), indent=2))
+    print("=" * 80 + "\n")
 
 
 def main() -> None:
-    """Main CLI entrypoint for OmniRAG-Ops."""
+    """Main application entry point."""
     parser = argparse.ArgumentParser(
-        description="OmniRAG-Ops: Enterprise Multi-Tier Retrieval Engine CLI"
-    )
-    parser.add_argument(
-        "--query", type=str, help="Search query string to process."
+        description="FinAgent-Ops Enterprise Application Runner"
     )
     parser.add_argument(
         "--mode",
         type=str,
-        default="auto",
-        choices=[
-            "auto",
-            "benchmark",
-            "naive",
-            "hybrid",
-            "graph",
-            "corrective",
-            "agentic",
-            "demo",
-        ],
-        help="Retrieval engine mode (default: auto router).",
+        default="cli",
+        choices=["cli", "api"],
+        help="Execution mode: 'cli' or 'api' server.",
     )
     parser.add_argument(
-        "--corpus",
+        "--ledger",
         type=str,
-        default="data/sample_corpus.json",
-        help="Path to sample corpus JSON.",
+        default="data/sample_ledger.csv",
+        help="Path to ledger CSV file.",
+    )
+    parser.add_argument(
+        "--bank",
+        type=str,
+        default="data/bank_statement.csv",
+        help="Path to bank statement CSV file.",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="Port number for FastAPI server mode.",
     )
 
     args = parser.parse_args()
 
-    if args.mode == "demo" or (not args.query and len(sys.argv) == 1):
-        run_demo()
-        return
-
-    if not args.query:
+    if args.mode == "api":
         print_banner()
-        print("Error: --query parameter required. Example:")
-        print("  python main.py --query 'What is Raft?' --mode auto")
-        sys.exit(1)
-
-    corpus_path = args.corpus
-
-    if args.mode == "auto":
-        router = RAGRouter(corpus_path=corpus_path)
-        output = router.route_and_execute(args.query)
-        print(json.dumps(output, indent=2))
-
-    elif args.mode == "benchmark":
-        router = RAGRouter(corpus_path=corpus_path)
-        output = router.benchmark_all_paradigms(args.query)
-        print(json.dumps(output, indent=2))
-
-    elif args.mode == "naive":
-        engine = NaiveRAG(corpus_path=corpus_path)
-        print(json.dumps(engine.generate(args.query), indent=2))
-
-    elif args.mode == "hybrid":
-        engine = HybridRAG(corpus_path=corpus_path)
-        print(json.dumps(engine.generate(args.query), indent=2))
-
-    elif args.mode == "graph":
-        engine = GraphRAG(corpus_path=corpus_path)
-        print(json.dumps(engine.generate(args.query), indent=2))
-
-    elif args.mode == "corrective":
-        engine = CorrectiveRAG(corpus_path=corpus_path)
-        print(json.dumps(engine.generate(args.query), indent=2))
-
-    elif args.mode == "agentic":
-        engine = AgenticRAG(corpus_path=corpus_path)
-        print(json.dumps(engine.run(args.query), indent=2))
+        print(f"[+] Starting FastAPI server on port {args.port}...")
+        uvicorn.run(app, host="0.0.0.0", port=args.port)
+    else:
+        run_cli_mode(args.ledger, args.bank)
 
 
 if __name__ == "__main__":
