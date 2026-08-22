@@ -1,140 +1,133 @@
-"""OmniRAG-Ops CLI and Demonstration Entry Point.
+"""CloudNative DevOps Day 3 CLI and Orchestrator Entry Point.
 
-Provides a CLI interface to query individual RAG paradigms, auto-route
-requests, or run comparative benchmarks across all 5 paradigms.
+Provides a unified command-line interface to start the FastAPI microservice,
+run container security audits, deploy to GitHub, and announce releases.
 """
 
 import argparse
 import json
 import sys
 
-from src.agentic_rag import AgenticRAG
-from src.corrective_rag import CorrectiveRAG
-from src.graph_rag import GraphRAG
-from src.hybrid_rag import HybridRAG
-from src.naive_rag import NaiveRAG
-from src.router import RAGRouter
+import uvicorn
+
+from scripts.github_deploy import GitHubDeployer
+from scripts.linkedin_poster import LinkedInPoster
+from scripts.security_audit import SecurityAuditor
 
 
 def print_banner() -> None:
-    """Print OmniRAG-Ops ASCII Banner."""
+    """Print ASCII banner for CloudNative-Ops-Day3 CLI."""
     banner = (
         "=" * 80 + "\n"
-        "             OMNIRAG-OPS: ENTERPRISE MULTI-TIER RETRIEVAL ENGINE\n"
+        "   CLOUD NATIVE OPS - DAY 3: PRODUCTION CI/CD & SECURITY PIPELINE\n"
+        "          Target Repository: devops-day3-cloudnative-pipeline\n"
         + "=" * 80 + "\n"
-        "Paradigms: [1] Naive RAG | [2] Hybrid RAG | [3] Graph RAG | "
-        "[4] Corrective RAG | [5] Agentic RAG\n"
+        "Modes: --mode serve | audit | deploy | announce | demo\n"
         + "-" * 80 + "\n"
     )
     print(banner)
 
 
 def run_demo() -> None:
-    """Execute demonstration queries showcasing all 5 RAG paradigms."""
+    """Execute complete pipeline dry-run demonstration."""
     print_banner()
-    corpus_file = "data/sample_corpus.json"
-    router = RAGRouter(corpus_path=corpus_file)
+    print("[1] STAGE 1: EXECUTING CONTAINER & DEPENDENCY SECURITY AUDIT...")
+    auditor = SecurityAuditor()
+    audit_report = auditor.run_full_audit()
+    print(
+        f"-> Security Audit Result: {audit_report['audit_status']} "
+        f"({audit_report['overall_compliance_score']}%)\n"
+    )
 
-    sample_queries = [
-        ("Simple Semantic Vector Search",
-         "What is Kubernetes and container orchestration?"),
-        ("Hybrid Keyword + Dense Search",
-         "Explain BM25 lexical ranking with FAISS vector similarity"),
-        ("Multi-Hop Graph Entity Search",
-         "How is Istio related to Zero Trust security topology?"),
-        ("Corrective RAG Evaluator & Fallback",
-         "Verify latest updates on cloud security compliance for 2025"),
-        ("Agentic Multi-Turn Reasoning",
-         "Decompose complex architecture requirements step by step"),
-    ]
+    print("[2] STAGE 2: SIMULATING GITHUB REPOSITORY DEPLOYMENT...")
+    deployer = GitHubDeployer(repo_name="devops-day3-cloudnative-pipeline")
+    deploy_result = deployer.sync_and_deploy(dry_run=True)
+    print(
+        f"-> GitHub Deploy Result: {deploy_result['status']} "
+        f"(Target: {deploy_result['target_repository']})\n"
+    )
 
-    print("\n[+] RUNNING AUTOMATIC ROUTER DEMO ON SAMPLE QUERIES:\n")
-    for category, query in sample_queries:
-        print(f"\n--- Category: {category} ---")
-        print(f"Query: '{query}'")
-        res = router.route_and_execute(query)
-        print(f"Selected Engine: {res['selected_paradigm']}")
-        print(f"Routing Reason:  {res['routing_reasoning']}")
-        print(f"Execution Time:  {res['latency_ms']} ms")
-        print("-" * 60)
-        print(res["engine_output"]["response"])
-        print("=" * 80)
+    print("[3] STAGE 3: GENERATING LINKEDIN ANNOUNCEMENT POST...")
+    poster = LinkedInPoster()
+    post_result = poster.publish_post(
+        repo_name="devops-day3-cloudnative-pipeline",
+        security_score=audit_report["overall_compliance_score"],
+        dry_run=True,
+    )
+    print(f"-> LinkedIn Poster Status: {post_result['status']}\n")
+
+    print("=" * 80)
+    print("[+] DEMO PIPELINE COMPLETED SUCCESSFULLY!")
+    print("=" * 80)
 
 
 def main() -> None:
-    """Main CLI entrypoint for OmniRAG-Ops."""
+    """Main entrypoint for CloudNative-Ops-Day3 CLI."""
     parser = argparse.ArgumentParser(
-        description="OmniRAG-Ops: Enterprise Multi-Tier Retrieval Engine CLI"
-    )
-    parser.add_argument(
-        "--query", type=str, help="Search query string to process."
+        description=(
+            "CloudNative-Ops-Day3: Production CI/CD & "
+            "Container Security Pipeline CLI"
+        )
     )
     parser.add_argument(
         "--mode",
         type=str,
-        default="auto",
-        choices=[
-            "auto",
-            "benchmark",
-            "naive",
-            "hybrid",
-            "graph",
-            "corrective",
-            "agentic",
-            "demo",
-        ],
-        help="Retrieval engine mode (default: auto router).",
+        default="demo",
+        choices=["serve", "audit", "deploy", "announce", "demo"],
+        help="Pipeline operation mode (default: demo).",
     )
     parser.add_argument(
-        "--corpus",
+        "--host",
         type=str,
-        default="data/sample_corpus.json",
-        help="Path to sample corpus JSON.",
+        default="0.0.0.0",
+        help="Host address for FastAPI server.",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="Port for FastAPI server.",
+    )
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help=(
+            "Perform live deployment / posting "
+            "instead of dry-run simulation."
+        ),
     )
 
     args = parser.parse_args()
 
-    if args.mode == "demo" or (not args.query and len(sys.argv) == 1):
+    if args.mode == "demo":
         run_demo()
-        return
 
-    if not args.query:
+    elif args.mode == "serve":
         print_banner()
-        print("Error: --query parameter required. Example:")
-        print("  python main.py --query 'What is Raft?' --mode auto")
-        sys.exit(1)
+        print(
+            f"[+] Starting FastAPI microservice on "
+            f"http://{args.host}:{args.port}"
+        )
+        uvicorn.run(
+            "src.app:app", host=args.host, port=args.port, reload=False
+        )
 
-    corpus_path = args.corpus
+    elif args.mode == "audit":
+        auditor = SecurityAuditor()
+        report = auditor.run_full_audit()
+        print(json.dumps(report, indent=2))
+        if report["audit_status"] != "PASSED":
+            sys.exit(1)
 
-    if args.mode == "auto":
-        router = RAGRouter(corpus_path=corpus_path)
-        output = router.route_and_execute(args.query)
-        print(json.dumps(output, indent=2))
+    elif args.mode == "deploy":
+        deployer = GitHubDeployer()
+        res = deployer.sync_and_deploy(dry_run=not args.live)
+        print(json.dumps(res, indent=2))
 
-    elif args.mode == "benchmark":
-        router = RAGRouter(corpus_path=corpus_path)
-        output = router.benchmark_all_paradigms(args.query)
-        print(json.dumps(output, indent=2))
-
-    elif args.mode == "naive":
-        engine = NaiveRAG(corpus_path=corpus_path)
-        print(json.dumps(engine.generate(args.query), indent=2))
-
-    elif args.mode == "hybrid":
-        engine = HybridRAG(corpus_path=corpus_path)
-        print(json.dumps(engine.generate(args.query), indent=2))
-
-    elif args.mode == "graph":
-        engine = GraphRAG(corpus_path=corpus_path)
-        print(json.dumps(engine.generate(args.query), indent=2))
-
-    elif args.mode == "corrective":
-        engine = CorrectiveRAG(corpus_path=corpus_path)
-        print(json.dumps(engine.generate(args.query), indent=2))
-
-    elif args.mode == "agentic":
-        engine = AgenticRAG(corpus_path=corpus_path)
-        print(json.dumps(engine.run(args.query), indent=2))
+    elif args.mode == "announce":
+        poster = LinkedInPoster()
+        res = poster.publish_post(dry_run=not args.live)
+        print(json.dumps(res, indent=2))
 
 
 if __name__ == "__main__":

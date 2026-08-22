@@ -1,0 +1,72 @@
+name: CloudNative Day-3 Production CI/CD & Security Pipeline
+
+on:
+  push:
+    branches: [ main, master, "jules-*" ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  ci-cd-pipeline:
+    name: Build, Lint, Test, Security Audit & Deploy Simulation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Code Quality & Linting (Flake8)
+        run: |
+          flake8 src scripts tests main.py
+
+      - name: Execute Unit & Integration Tests (Pytest)
+        env:
+          PYTHONPATH: .
+        run: |
+          pytest tests/ -v --tb=short
+
+      - name: Automated Container & Dependency Security Scan
+        run: |
+          python scripts/security_audit.py --json-out audit_report.json
+
+      - name: Upload Security Audit Report Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-audit-report
+          path: audit_report.json
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker Container Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          tags: devops-day3-cloudnative-pipeline:latest
+
+      - name: Execute Automated GitHub Deployment Simulation
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/github_deploy.py --repo-name devops-day3-cloudnative-pipeline --dry-run
+
+      - name: Execute Automated LinkedIn Post Simulation
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
+        run: |
+          python scripts/linkedin_poster.py --repo-name devops-day3-cloudnative-pipeline

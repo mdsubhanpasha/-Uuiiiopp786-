@@ -1,152 +1,164 @@
-# OmniRAG-Ops: Enterprise Multi-Tier Retrieval Engine
+# CloudNative-Ops-Day3: Production CI/CD & Automated Container Security Pipeline
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com/)
+[![Docker Multi-Stage](https://img.shields.io/badge/Docker-Multi--Stage-2496ED.svg)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code Style: PEP8](https://img.shields.io/badge/code%20style-PEP8-green.svg)](https://www.python.org/dev/peps/pep-0008/)
 
-**OmniRAG-Ops** is an enterprise-grade, multi-architecture Retrieval-Augmented Generation (RAG) framework implemented in Python. It provides five distinct RAG paradigms, an intelligent dynamic query router, automated GitHub repository deployment scripts, and automated LinkedIn technical posting capabilities.
+**CloudNative-Ops-Day3** is an enterprise-grade Day-3 DevOps delivery pipeline featuring an optimized FastAPI microservice, hardened multi-stage Docker build, automated container security scanning, automated GitHub repository deployment, and LinkedIn release announcements.
 
 ---
 
-## 🏗️ Architectural Overview
+## 🏗️ Key Architectural Components
 
 ```text
                                   +-----------------------+
-                                  |   User Input Query    |
-                                  +-----------+-----------+
-                                              |
-                                              v
-                                  +-----------------------+
-                                  |   RAG Query Router    |
-                                  |    (src/router.py)    |
+                                  |   FastAPI Microservice|
+                                  |     (src/app.py)      |
                                   +-----------+-----------+
                                               |
       +-------------------+-------------------+-------------------+-------------------+
       |                   |                   |                   |                   |
       v                   v                   v                   v                   v
 +------------+     +------------+     +------------+     +------------+     +------------+
-| Naive RAG  |     | Hybrid RAG |     | Graph RAG  |     |   CRAG     |     |Agentic RAG |
-| (Dense)    |     |(BM25+Dense)|     |(NetworkX)  |     |(Web Fallback)|   |(LangGraph) |
+| GET /      |     | GET /health|     |GET /metrics|     |POST        |     | Multi-Stage|
+| Metadata   |     | Uptime     |     | Telemetry  |     |/transaction|     | Dockerfile |
 +------------+     +------------+     +------------+     +------------+     +------------+
+                                              |
+                                              v
+                                  +-----------------------+
+                                  | Security Auditor      |
+                                  |scripts/security_audit |
+                                  +-----------+-----------+
+                                              |
+                                              v
+                                  +-----------------------+
+                                  |  GitHub Actions CI/CD |
+                                  | (.github/workflows)   |
+                                  +-----------+-----------+
+                                              |
+                      +-----------------------+-----------------------+
+                      |                                               |
+                      v                                               v
+          +-----------------------+                       +-----------------------+
+          | GitHub Deployer       |                       | LinkedIn Announcer    |
+          |(scripts/github_deploy)|                       |(scripts/linkedin_post)|
+          +-----------------------+                       +-----------------------+
 ```
 
----
-
-## 🚀 The 5 Implemented RAG Paradigms
-
-### 1. Naive RAG (`src/naive_rag.py`)
-- **Mechanism**: Standard dense vector embedding retrieval using cosine similarity.
-- **Use Case**: Simple semantic lookups and direct factual queries.
-- **Key Features**: In-memory vector store, document chunk indexing, cosine distance scoring.
-
-### 2. Hybrid / Modular RAG (`src/hybrid_rag.py`)
-- **Mechanism**: Combines BM25 lexical keyword search and dense vector search merged via **Reciprocal Rank Fusion (RRF)**.
-- **Use Case**: Domain-specific queries containing technical jargon, exact model numbers, or acronyms.
-- **Key Features**: BM25 Okapi search, RRF scoring ($K=60$), Cohere cross-encoder reranking simulation.
-
-### 3. Graph RAG (`src/graph_rag.py`)
-- **Mechanism**: Knowledge-graph-based multi-hop entity traversal using **NetworkX**.
-- **Use Case**: Queries requiring structural reasoning across connected nodes, dependencies, and network topologies.
-- **Key Features**: Dynamic entity extraction, directed multi-hop edge traversal, relation-aware context synthesis.
-
-### 4. Corrective RAG - CRAG (`src/corrective_rag.py`)
-- **Mechanism**: Evaluator-guided retrieval that assesses document confidence and triggers fallback web search when confidence drops below 0.65.
-- **Use Case**: Fast-changing domains, real-time verification, or external information retrieval.
-- **Key Features**: Confidence scoring evaluator, query re-writing module, dynamic web search integration (Tavily/Serper).
-
-### 5. Agentic RAG (`src/agentic_rag.py`)
-- **Mechanism**: Autonomous multi-turn reasoning graph inspired by **LangGraph**.
-- **Use Case**: Complex multi-part enterprise requests requiring query decomposition and tool orchestration.
-- **Key Features**: State machine (`AgentState`), tool suite (vector, graph, web search, code runner), reflection loop.
-
----
-
-## 🚦 Intelligent RAG Router (`src/router.py`)
-
-The `RAGRouter` automatically inspects incoming user queries and selects the optimal retrieval paradigm based on intent classification and complexity heuristics:
-
-| Query Intent / Pattern | Target Paradigm | Primary Reasoning |
-| :--- | :--- | :--- |
-| Decompose / Multi-step / Workflow | **Agentic RAG** | Autonomous tool orchestration and reflection required |
-| Relationships / Dependencies / Links | **Graph RAG** | Knowledge graph multi-hop traversal needed |
-| Verify / Latest / Recent / Web | **Corrective RAG** | Evaluator check with web fallback |
-| Specific terms / BM25 / RFC specs | **Hybrid RAG** | Lexical + Dense precision needed |
-| Standard direct queries | **Naive RAG** | Direct vector similarity lookup |
+1. **Application Microservice (`src/app.py`)**: Production-ready FastAPI service offering metadata (`GET /`), health checks (`GET /health`), real-time operational metrics (`GET /metrics`), and input-validated transaction processing (`POST /transaction`).
+2. **Optimized Multi-Stage Dockerfile (`Dockerfile`)**: Production multi-stage build using `python:3.11-slim` builder and runtime stages, running as a non-root system user (`appuser`), minimizing image size, and configuring container health checks (`HEALTHCHECK`).
+3. **Automated Security Auditor (`scripts/security_audit.py`)**: Scans `requirements.txt` for dependency vulnerabilities and evaluates `Dockerfile` against 6 CloudNative container hardening rules.
+4. **GitHub Deployment Automation (`scripts/github_deploy.py`)**: Automates git status checks, commit creation, and code deployment targeting the repository `devops-day3-cloudnative-pipeline`.
+5. **LinkedIn Release Announcer (`scripts/linkedin_poster.py`)**: Reads pipeline completion status and automatically posts technical release announcements to LinkedIn via API.
+6. **Automated CI/CD Pipeline (`.github/workflows/ci_cd.yml`)**: GitHub Actions workflow executing PEP8 linting (Flake8), unit & integration tests (Pytest), security scans, Docker build verification, and deployment simulations.
 
 ---
 
 ## 📁 Repository Structure
 
 ```text
-omnirag-ops/
-├── data/
-│   └── sample_corpus.json      # Enterprise knowledge base with entities & relations
+devops-day3-cloudnative-pipeline/
+├── .github/
+│   └── workflows/
+│       └── ci_cd.yml             # GitHub Actions CI/CD Pipeline
 ├── src/
-│   ├── __init__.py             # Package exports
-│   ├── naive_rag.py            # Naive Dense Vector RAG
-│   ├── hybrid_rag.py           # Hybrid BM25 + Vector RAG with RRF & Reranker
-│   ├── graph_rag.py            # Knowledge Graph Multi-Hop RAG
-│   ├── corrective_rag.py       # Corrective RAG with Web Search Fallback
-│   ├── agentic_rag.py          # Multi-Turn Agentic RAG with Reflection
-│   └── router.py               # Dynamic Query Router & Benchmarking
+│   ├── __init__.py               # Package exports
+│   └── app.py                    # FastAPI Microservice
+├── tests/
+│   ├── __init__.py               # Test package initialization
+│   └── test_app.py               # Unit & Integration tests
 ├── scripts/
-│   ├── github_deploy.py        # GitHub repository deployment script
-│   └── linkedin_poster.py      # Automated technical post generator
-├── tests/                      # Pytest suite
-├── .env.example                # Environment variables template
-├── requirements.txt            # Python dependencies
-├── README.md                   # System documentation
-└── main.py                     # CLI & Interactive Demo runner
+│   ├── security_audit.py         # Container & dependency security scanner
+│   ├── github_deploy.py          # GitHub repository deployment automation
+│   └── linkedin_poster.py        # Automated LinkedIn technical announcer
+├── Dockerfile                    # Multi-stage production Dockerfile
+├── .dockerignore                 # Docker build exclusions
+├── .env.example                  # Environment configuration template
+├── requirements.txt              # Python dependencies
+├── README.md                     # System documentation
+└── main.py                       # CLI orchestrator & entry point
 ```
 
 ---
 
-## 🛠️ Installation & Quickstart
+## 🚀 Quickstart & Usage Guide
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/your-username/omnirag-ops.git
-   cd omnirag-ops
-   ```
+### 1. Installation & Environment Setup
+Clone the repository and install the dependencies:
+```bash
+git clone https://github.com/username/devops-day3-cloudnative-pipeline.git
+cd devops-day3-cloudnative-pipeline
+pip install -r requirements.txt
+cp .env.example .env
+```
 
-2. **Install Python dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 2. Run Complete Pipeline Demo
+Run the end-to-end pipeline in dry-run mode (Security Audit -> Deployment Sync -> LinkedIn Announcement):
+```bash
+python main.py --mode demo
+```
 
-3. **Configure environment variables**:
-   ```bash
-   cp .env.example .env
-   ```
-
-4. **Run interactive demo mode**:
-   ```bash
-   python main.py --mode demo
-   ```
-
-5. **Run query with automatic dynamic routing**:
-   ```bash
-   python main.py --query "How is Istio related to Zero Trust and Kubernetes?" --mode auto
-   ```
-
-6. **Benchmark all 5 paradigms on a single query**:
-   ```bash
-   python main.py --query "Decompose security compliance requirements" --mode benchmark
-   ```
+### 3. Start Microservice Locally
+```bash
+python main.py --mode serve --port 8000
+```
+Then visit http://localhost:8000/docs for the interactive Swagger API documentation.
 
 ---
 
-## 🤖 Automation Scripts
+## 🔒 Container Security Audit
 
-### 1. GitHub Repository Deployer (`scripts/github_deploy.py`)
-Automates pushing code changes and repository initialization to GitHub via PyGithub or Git CLI:
+Run the automated container security auditor:
 ```bash
-python scripts/github_deploy.py --commit-msg "Deploy enterprise OmniRAG-Ops release"
+python scripts/security_audit.py
+```
+The auditor checks:
+- Multi-stage build separation (`AS builder` / `AS runtime`).
+- Non-root runtime execution (`USER appuser`).
+- Minimal base image footprint (`python:3.11-slim`).
+- Container health checking (`HEALTHCHECK`).
+- Secret/Credential exposure analysis.
+- Unpinned base tag prevention.
+
+---
+
+## 🐳 Docker Deployment & Containerization
+
+Build and run the containerized FastAPI microservice:
+```bash
+# Build multi-stage Docker image
+docker build -t devops-day3-cloudnative-pipeline:1.0.0 .
+
+# Run container on port 8000
+docker run -d --name cloudnative-app -p 8000:8000 devops-day3-cloudnative-pipeline:1.0.0
+
+# Inspect container health
+docker inspect --format='{{json .State.Health}}' cloudnative-app
 ```
 
-### 2. LinkedIn Automated Poster (`scripts/linkedin_poster.py`)
-Generates structured technical post announcements showcasing the OmniRAG-Ops architecture and publishes via LinkedIn API:
+---
+
+## 🤖 Deployment Automation Scripts
+
+### 1. GitHub Deployment Automation
+Simulate or execute synchronization to `devops-day3-cloudnative-pipeline`:
 ```bash
+# Dry-run simulation
+python scripts/github_deploy.py --dry-run
+
+# Live push execution
+python scripts/github_deploy.py --live
+```
+
+### 2. LinkedIn Technical Release Announcer
+Simulate or publish release updates:
+```bash
+# Dry-run preview
+python scripts/linkedin_poster.py
+
+# Live publish via LinkedIn API
 python scripts/linkedin_poster.py --publish
 ```
 
@@ -154,14 +166,13 @@ python scripts/linkedin_poster.py --publish
 
 ## 🧪 Testing & Code Quality
 
-Run tests using `pytest`:
+Execute Flake8 linting and Pytest test suite:
 ```bash
-pytest tests/ -v
-```
+# Code linting
+flake8 src scripts tests main.py
 
-Check code formatting and PEP8 compliance using `flake8`:
-```bash
-flake8 src/ scripts/ tests/ main.py
+# Unit & Integration tests
+PYTHONPATH=. python -m pytest tests/ -v
 ```
 
 ---

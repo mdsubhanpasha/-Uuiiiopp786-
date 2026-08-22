@@ -1,31 +1,31 @@
 """Automated GitHub Deployment and Repository Synchronization Script.
 
-Handles automated staging, committing, tag management, and pushing
-for the OmniRAG-Ops enterprise repository.
+Handles automated repository sync, staging, committing, and pushing
+for the target repository: devops-day3-cloudnative-pipeline.
 """
 
 import argparse
 import logging
 import os
 import subprocess
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger("GitHubDeploy")
 
 
 class GitHubDeployer:
-    """Automated deployment manager for GitHub repositories."""
+    """Automated deployment manager for devops-day3-cloudnative-pipeline."""
 
     def __init__(
         self,
-        repo_name: str = "username/omnirag-ops",
+        repo_name: str = "devops-day3-cloudnative-pipeline",
         token: Optional[str] = None,
     ) -> None:
         """Initialize GitHubDeployer.
 
         Args:
-            repo_name: GitHub repository identifier (owner/repo).
+            repo_name: Target GitHub repository name.
             token: Personal Access Token for GitHub authentication.
         """
         self.repo_name = os.getenv("GITHUB_REPO_NAME", repo_name)
@@ -40,7 +40,7 @@ class GitHubDeployer:
         Returns:
             Output string from command execution.
         """
-        logger.info("Executing: %s", command)
+        logger.info("Executing command: %s", command)
         result = subprocess.run(
             command,
             shell=True,
@@ -48,7 +48,7 @@ class GitHubDeployer:
             text=True,
         )
         if result.returncode != 0:
-            logger.warning("Command failed output: %s", result.stderr)
+            logger.warning("Command stderr output: %s", result.stderr.strip())
             return result.stderr.strip()
         return result.stdout.strip()
 
@@ -68,48 +68,74 @@ class GitHubDeployer:
             "file_changes": changes,
         }
 
-    def deploy(
+    def sync_and_deploy(
         self,
-        commit_message: str = "Deploy OmniRAG-Ops enterprise release",
+        commit_message: str = (
+            "feat: Day-3 CloudNative CI/CD & Container Security Pipeline"
+        ),
         branch: str = "main",
         dry_run: bool = False,
     ) -> Dict[str, Any]:
-        """Deploy and synchronize code with GitHub repository.
+        """Synchronize code changes and deploy to target GitHub repository.
 
         Args:
             commit_message: Message for git commit.
-            branch: Git target branch name.
+            branch: Target git branch name.
             dry_run: If True, simulates operations without pushing.
 
         Returns:
             Dict summarizing deployment result.
         """
         status = self.check_git_status()
-        logger.info("Git Status: %d modified files.", status["modified_count"])
+        logger.info(
+            "Working tree status: %d modified/untracked files.",
+            status["modified_count"],
+        )
+
+        target_repo = self.repo_name
+        logger.info("Target deployment repository: %s", target_repo)
 
         if dry_run:
             logger.info("[DRY RUN] Would execute: git add .")
             logger.info(
                 "[DRY RUN] Would commit with message: '%s'", commit_message
             )
-            logger.info("[DRY RUN] Would push to branch: %s", branch)
+            logger.info(
+                "[DRY RUN] Would sync & push to remote repo '%s' "
+                "on branch '%s'",
+                target_repo,
+                branch,
+            )
             return {
-                "status": "success",
-                "mode": "dry_run",
-                "message": "Dry run deployment completed successfully.",
+                "status": "SUCCESS",
+                "mode": "DRY_RUN",
+                "target_repository": target_repo,
+                "branch": branch,
+                "commit_message": commit_message,
                 "modified_files": status["file_changes"],
+                "message": (
+                    "GitHub deployment simulation completed successfully."
+                ),
             }
 
-        # Stage and commit
+        # Stage changes
         self.run_command("git add .")
-        commit_res = self.run_command(f'git commit -m "{commit_message}"')
-        logger.info("Commit result: %s", commit_res)
 
-        # Push to remote
+        # Commit changes if any exist
+        if status["has_changes"]:
+            commit_res = self.run_command(
+                f'git commit -m "{commit_message}"'
+            )
+            logger.info("Commit output: %s", commit_res)
+        else:
+            logger.info("No uncommitted changes detected. Skipping commit.")
+
+        # Push to remote branch
         push_res = self.run_command(f"git push origin {branch}")
 
         return {
-            "status": "completed",
+            "status": "COMPLETED",
+            "target_repository": target_repo,
             "branch": branch,
             "commit_message": commit_message,
             "output": push_res,
@@ -119,13 +145,24 @@ class GitHubDeployer:
 def main() -> None:
     """CLI entrypoint for GitHub Deployer."""
     parser = argparse.ArgumentParser(
-        description="Automated GitHub Repository Deployer for OmniRAG-Ops"
+        description=(
+            "Automated GitHub Repository Deployer "
+            "for CloudNative-Ops-Day3"
+        )
     )
     parser.add_argument(
         "--commit-msg",
         type=str,
-        default="Deploy OmniRAG-Ops multi-tier retrieval engine",
+        default=(
+            "feat: Production CI/CD & Automated Container Security Pipeline"
+        ),
         help="Git commit message.",
+    )
+    parser.add_argument(
+        "--repo-name",
+        type=str,
+        default="devops-day3-cloudnative-pipeline",
+        help="Target GitHub repository name.",
     )
     parser.add_argument(
         "--branch",
@@ -136,17 +173,33 @@ def main() -> None:
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Run deployment simulation without pushing.",
+        default=True,
+        help="Run deployment simulation without pushing live (default: True).",
+    )
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Execute live git push to remote repository.",
     )
 
     args = parser.parse_args()
-    deployer = GitHubDeployer()
-    result = deployer.deploy(
+    deployer = GitHubDeployer(repo_name=args.repo_name)
+
+    is_dry_run = not args.live
+    result = deployer.sync_and_deploy(
         commit_message=args.commit_msg,
         branch=args.branch,
-        dry_run=args.dry_run,
+        dry_run=is_dry_run,
     )
-    print(f"\n[+] GitHub Deployment Result:\n{result}")
+
+    print("\n" + "=" * 60)
+    print("GITHUB DEPLOYMENT SUMMARY")
+    print("=" * 60)
+    print(f"Status:       {result['status']}")
+    print(f"Repository:   {result['target_repository']}")
+    print(f"Branch:       {result['branch']}")
+    print(f"Commit Msg:   {result['commit_message']}")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

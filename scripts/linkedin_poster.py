@@ -1,7 +1,7 @@
 """Automated LinkedIn Technical Content Generator and Poster Script.
 
-Generates technical posts highlighting OmniRAG-Ops architecture and publishes
-them via LinkedIn API v2 (UGC Posts) or operates in dry-run mode.
+Reads pipeline execution status and posts Day 3 CloudNative DevOps project
+achievement to LinkedIn via API v2 (UGC Posts) or operates in dry-run mode.
 """
 
 import argparse
@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional
 
 import requests
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger("LinkedInPoster")
 
 
@@ -37,51 +37,73 @@ class LinkedInPoster:
         )
         self.api_url = "https://api.linkedin.com/v2/ugcPosts"
 
-    def generate_post_content(self) -> str:
+    def generate_post_content(
+        self,
+        repo_name: str = "devops-day3-cloudnative-pipeline",
+        security_score: float = 100.0,
+    ) -> str:
         """Generate structured markdown technical announcement post.
+
+        Args:
+            repo_name: Name of target GitHub repository.
+            security_score: Container security audit compliance score.
 
         Returns:
             String containing formatted post text with hashtags.
         """
         post_text = (
-            "🚀 Excited to announce OmniRAG-Ops: Enterprise Multi-Tier "
-            "Retrieval Engine!\n\n"
-            "I've built an end-to-end multi-architecture RAG framework "
-            "implementing five distinct RAG paradigms in Python:\n\n"
-            "1️⃣ Naive RAG: Dense vector retrieval using cosine similarity.\n"
-            "2️⃣ Hybrid RAG: BM25 Lexical + Dense Vector search merged via "
-            "Reciprocal Rank Fusion (RRF) & Cohere reranking.\n"
-            "3️⃣ Graph RAG: Knowledge graph entity extraction & multi-hop "
-            "traversal using NetworkX.\n"
-            "4️⃣ Corrective RAG (CRAG): Evaluator confidence scoring with "
-            "dynamic web search fallback.\n"
-            "5️⃣ Agentic RAG: LangGraph-inspired autonomous multi-turn "
-            "reasoning graph with query decomposition and tool reflection.\n\n"
-            "🧠 Powered by an Intelligent Dynamic Router that classifies "
-            "query intent and routes to the optimal engine automatically!\n\n"
-            "#AI #GenerativeAI #RAG #MachineLearning #Python #Architecture"
+            "🚀 Day 3 CloudNative DevOps Milestone: Production CI/CD & "
+            "Automated Container Security Pipeline Released!\n\n"
+            f"I've built and deployed 'CloudNative-Ops-Day3' ({repo_name}), "
+            "an end-to-end production-grade DevOps delivery pipeline "
+            "featuring:\n\n"
+            "1️⃣ Production FastAPI Microservice: Health checks, "
+            "system metrics, and transactional validation endpoints.\n"
+            "2️⃣ Multi-Stage Dockerfile: Hardened container footprint "
+            "running with non-root 'appuser' and built-in HEALTHCHECK.\n"
+            "3️⃣ Automated Security Scanner (`scripts/security_audit.py`): "
+            "Dependency vulnerability checks & Dockerfile rule validation "
+            f"(Score: {security_score}%).\n"
+            "4️⃣ GitHub Actions CI/CD (`.github/workflows/ci_cd.yml`): "
+            "Automated Flake8 linting, Pytest suite, security audit, "
+            "and container verification.\n"
+            "5️⃣ Deployment & LinkedIn Automation: One-click sync to GitHub "
+            "repository and automated technical release posting.\n\n"
+            "#DevOps #CloudNative #Docker #FastAPI #GitHubActions "
+            "#CyberSecurity #Python #CI_CD #Containers #DevSecOps"
         )
         return post_text
 
-    def publish_post(self, dry_run: bool = True) -> Dict[str, Any]:
+    def publish_post(
+        self,
+        repo_name: str = "devops-day3-cloudnative-pipeline",
+        security_score: float = 100.0,
+        dry_run: bool = True,
+    ) -> Dict[str, Any]:
         """Publish post content to LinkedIn API or run dry-run simulation.
 
         Args:
+            repo_name: Target repository name.
+            security_score: Security audit score percentage.
             dry_run: If True, previews generated post without calling API.
 
         Returns:
             Dict response with post status and metadata.
         """
-        content = self.generate_post_content()
+        content = self.generate_post_content(
+            repo_name=repo_name, security_score=security_score
+        )
 
         if dry_run or not self.access_token or "sample" in self.author_urn:
-            logger.info("[DRY RUN] LinkedIn Post generated successfully:\n")
+            logger.info(
+                "[DRY RUN] LinkedIn Announcement generated successfully:\n"
+            )
             print("=" * 60)
             print(content)
             print("=" * 60)
             return {
-                "status": "success",
-                "mode": "dry_run",
+                "status": "SUCCESS",
+                "mode": "DRY_RUN",
                 "message": "Post generated and validated in dry-run mode.",
                 "post_content": content,
             }
@@ -111,16 +133,16 @@ class LinkedInPoster:
                 self.api_url, headers=headers, json=payload, timeout=10
             )
             response.raise_for_status()
-            logger.info("LinkedIn post successfully published!")
+            logger.info("LinkedIn post successfully published via API!")
             return {
-                "status": "published",
+                "status": "PUBLISHED",
                 "response_code": response.status_code,
                 "data": response.json(),
             }
         except Exception as err:
-            logger.error("Failed to publish to LinkedIn: %s", str(err))
+            logger.error("Failed to publish to LinkedIn API: %s", str(err))
             return {
-                "status": "error",
+                "status": "ERROR",
                 "error": str(err),
             }
 
@@ -131,22 +153,32 @@ def main() -> None:
         description="Automated LinkedIn Technical Post Generator & Publisher"
     )
     parser.add_argument(
+        "--repo-name",
+        type=str,
+        default="devops-day3-cloudnative-pipeline",
+        help="Target GitHub repository name.",
+    )
+    parser.add_argument(
+        "--score",
+        type=float,
+        default=100.0,
+        help="Container security audit score.",
+    )
+    parser.add_argument(
         "--publish",
         action="store_true",
         help="Attempt live publishing using environment credentials.",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        default=True,
-        help="Simulate post generation without publishing.",
     )
 
     args = parser.parse_args()
     poster = LinkedInPoster()
 
     is_dry_run = not args.publish
-    result = poster.publish_post(dry_run=is_dry_run)
+    result = poster.publish_post(
+        repo_name=args.repo_name,
+        security_score=args.score,
+        dry_run=is_dry_run,
+    )
     print(f"\n[+] LinkedIn Posting Result Status: {result['status']}")
 
 
