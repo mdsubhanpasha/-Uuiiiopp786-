@@ -1,8 +1,4 @@
-"""Automated LinkedIn Technical Content Generator and Poster Script.
-
-Generates technical posts highlighting OmniRAG-Ops architecture and publishes
-them via LinkedIn API v2 (UGC Posts) or operates in dry-run mode.
-"""
+"""Automated LinkedIn Technical Content Generator and Poster Script."""
 
 import argparse
 import logging
@@ -44,22 +40,15 @@ class LinkedInPoster:
             String containing formatted post text with hashtags.
         """
         post_text = (
-            "🚀 Excited to announce OmniRAG-Ops: Enterprise Multi-Tier "
-            "Retrieval Engine!\n\n"
-            "I've built an end-to-end multi-architecture RAG framework "
-            "implementing five distinct RAG paradigms in Python:\n\n"
-            "1️⃣ Naive RAG: Dense vector retrieval using cosine similarity.\n"
-            "2️⃣ Hybrid RAG: BM25 Lexical + Dense Vector search merged via "
-            "Reciprocal Rank Fusion (RRF) & Cohere reranking.\n"
-            "3️⃣ Graph RAG: Knowledge graph entity extraction & multi-hop "
-            "traversal using NetworkX.\n"
-            "4️⃣ Corrective RAG (CRAG): Evaluator confidence scoring with "
-            "dynamic web search fallback.\n"
-            "5️⃣ Agentic RAG: LangGraph-inspired autonomous multi-turn "
-            "reasoning graph with query decomposition and tool reflection.\n\n"
-            "🧠 Powered by an Intelligent Dynamic Router that classifies "
-            "query intent and routes to the optimal engine automatically!\n\n"
-            "#AI #GenerativeAI #RAG #MachineLearning #Python #Architecture"
+            "🚀 Announcing FinAgent-Ops: Autonomous Multi-Agent Financial "
+            "Reconciliation & Fraud Detection Engine!\n\n"
+            "An enterprise multi-agent engine built with Python & LangGraph:\n"
+            "1️⃣ Ingestion & Validation Agent\n"
+            "2️⃣ Reconciliation & Isolation Forest ML Anomaly Agent\n"
+            "3️⃣ Forensic Audit LLM Agent (Tool Calling + CoT)\n"
+            "4️⃣ Report & Notification Agent (FPDF Reports)\n"
+            "5️⃣ LangGraph Supervisor Orchestrator\n\n"
+            "#FinTech #AI #LangGraph #Python #FastAPI #FraudDetection"
         )
         return post_text
 
@@ -128,7 +117,7 @@ class LinkedInPoster:
 def main() -> None:
     """CLI entrypoint for LinkedIn Poster."""
     parser = argparse.ArgumentParser(
-        description="Automated LinkedIn Technical Post Generator & Publisher"
+        description="Automated LinkedIn Poster for FinAgent-Ops"
     )
     parser.add_argument(
         "--publish",

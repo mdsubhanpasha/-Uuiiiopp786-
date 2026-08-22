@@ -1,7 +1,7 @@
 """Automated GitHub Deployment and Repository Synchronization Script.
 
 Handles automated staging, committing, tag management, and pushing
-for the OmniRAG-Ops enterprise repository.
+for the FinAgent-Ops enterprise repository.
 """
 
 import argparse
@@ -19,7 +19,7 @@ class GitHubDeployer:
 
     def __init__(
         self,
-        repo_name: str = "username/omnirag-ops",
+        repo_name: str = "username/finagent-ops",
         token: Optional[str] = None,
     ) -> None:
         """Initialize GitHubDeployer.
@@ -70,7 +70,7 @@ class GitHubDeployer:
 
     def deploy(
         self,
-        commit_message: str = "Deploy OmniRAG-Ops enterprise release",
+        commit_message: str = "Deploy FinAgent-Ops enterprise release",
         branch: str = "main",
         dry_run: bool = False,
     ) -> Dict[str, Any]:
@@ -119,12 +119,12 @@ class GitHubDeployer:
 def main() -> None:
     """CLI entrypoint for GitHub Deployer."""
     parser = argparse.ArgumentParser(
-        description="Automated GitHub Repository Deployer for OmniRAG-Ops"
+        description="Automated GitHub Repository Deployer for FinAgent-Ops"
     )
     parser.add_argument(
         "--commit-msg",
         type=str,
-        default="Deploy OmniRAG-Ops multi-tier retrieval engine",
+        default="Deploy FinAgent-Ops multi-agent engine",
         help="Git commit message.",
     )
     parser.add_argument(
