@@ -3,9 +3,11 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-green.svg)](https://fastapi.tiangolo.com/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-StateGraph-orange.svg)](https://github.com/langchain-ai/langgraph)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.28%2B-blue.svg)](https://kubernetes.io/)
+[![Terraform](https://img.shields.io/badge/Terraform-1.5%2B-purple.svg)](https://www.terraform.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**FinAgent-Ops** is an enterprise-grade, multi-agent autonomous framework implemented in Python, LangGraph, FastAPI, and Docker. It ingests ERP financial ledger transactions and bank statements, performs deterministic rule-matching and statistical Isolation Forest ML anomaly detection, runs forensic LLM tool-calling and Chain-of-Thought (CoT) audit evaluations, exports PDF/JSON audit artifacts, and automates GitHub commits and LinkedIn deployment publishing.
+**FinAgent-Ops** is an enterprise-grade, multi-agent autonomous framework implemented in Python, LangGraph, FastAPI, Docker, and Kubernetes. It ingests ERP financial ledger transactions and bank statements, performs deterministic rule-matching and statistical Isolation Forest ML anomaly detection, runs forensic LLM tool-calling and Chain-of-Thought (CoT) audit evaluations, exports PDF/JSON audit artifacts, and automates zero-downtime Kubernetes orchestration via Terraform IaC and GitOps CI/CD pipelines.
 
 ---
 
@@ -59,9 +61,24 @@
 
 ```text
 finagent-ops/
+├── .github/
+│   └── workflows/
+│       ├── ci.yml              # Python build and test workflow
+│       └── k8s-deploy.yml      # GitOps Terraform & Kubernetes rollout workflow
 ├── data/
 │   ├── sample_ledger.csv      # Sample ERP financial ledger transactions
 │   └── bank_statement.csv     # Sample bank statement transaction feed
+├── k8s/
+│   ├── deployment.yaml        # Multi-replica microservice rollout & probes
+│   ├── service.yaml           # ClusterIP & LoadBalancer networking
+│   ├── hpa.yaml               # Dynamic scaling (2-10 replicas, 70% target)
+│   ├── configmap-secret.yaml  # Environment configuration & secret management
+│   └── ingress.yaml           # TLS termination & path-based routing
+├── terraform/
+│   ├── main.tf                # EKS cluster, VPC, IAM, SG, ECR resources
+│   ├── variables.tf           # Terraform variables & configurable inputs
+│   ├── outputs.tf             # Infrastructure outputs
+│   └── providers.tf           # AWS provider & S3/DynamoDB remote state backend
 ├── src/
 │   ├── __init__.py
 │   ├── models.py              # Core Pydantic data models & LangGraph state
@@ -120,6 +137,27 @@ curl -X POST "http://localhost:8000/api/v1/reconcile" \
 
 ---
 
+## ☸️ Infrastructure-as-Code & Kubernetes GitOps
+
+### Provision Infrastructure with Terraform
+```bash
+cd terraform
+terraform init
+terraform plan
+terraform apply
+```
+
+### Deploy to Kubernetes
+```bash
+kubectl apply -f k8s/configmap-secret.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/hpa.yaml
+kubectl apply -f k8s/ingress.yaml
+```
+
+---
+
 ## 🐳 Docker Deployment
 
 Build and run using Docker:
@@ -134,7 +172,7 @@ docker run -p 8000:8000 finagent-ops:latest
 
 Run tests using `pytest`:
 ```bash
-PYTHONPATH=. pytest tests/ -v
+python -m pytest tests/ -v
 ```
 
 Check PEP8 compliance using `flake8`:
