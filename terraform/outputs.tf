@@ -1,0 +1,39 @@
+output "vpc_id" {
+  description = "The ID of the VPC"
+  value       = aws_vpc.main.id
+}
+
+output "public_subnet_ids" {
+  description = "List of public subnet IDs"
+  value       = aws_subnet.public[*].id
+}
+
+output "private_subnet_ids" {
+  description = "List of private subnet IDs"
+  value       = aws_subnet.private[*].id
+}
+
+output "cluster_name" {
+  description = "Name of the EKS cluster"
+  value       = aws_eks_cluster.main.name
+}
+
+output "cluster_endpoint" {
+  description = "Endpoint for the EKS Kubernetes API server"
+  value       = aws_eks_cluster.main.endpoint
+}
+
+output "cluster_security_group_id" {
+  description = "Security group ID attached to the EKS cluster"
+  value       = aws_security_group.eks_cluster.id
+}
+
+output "node_group_arn" {
+  description = "Amazon Resource Name (ARN) of the EKS node group"
+  value       = aws_eks_node_group.main.arn
+}
+
+output "ecr_repository_url" {
+  description = "URL of the created ECR repository"
+  value       = aws_ecr_repository.main.repository_url
+}
