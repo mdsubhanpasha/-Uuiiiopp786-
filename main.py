@@ -9,6 +9,7 @@ import os
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from prometheus_fastapi_instrumentator import Instrumentator
 import uvicorn
 
 from scripts.github_deploy import GitHubDeployer
@@ -29,6 +30,8 @@ app = FastAPI(
     ),
     version="1.0.0",
 )
+
+Instrumentator().instrument(app).expose(app)
 
 
 @app.get("/health")

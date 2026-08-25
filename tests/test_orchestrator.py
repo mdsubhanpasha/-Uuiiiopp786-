@@ -32,6 +32,10 @@ def test_fastapi_endpoints():
     assert res_health.status_code == 200
     assert res_health.json()["status"] == "healthy"
 
+    res_metrics = client.get("/metrics")
+    assert res_metrics.status_code == 200
+    assert "http_requests_total" in res_metrics.text
+
     res_rec = client.post(
         "/api/v1/reconcile",
         json={

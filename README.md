@@ -89,7 +89,15 @@ finagent-ops/
 │       ├── recon_agent.py     # Deterministic & ML Isolation Forest matching agent
 │       ├── audit_agent.py     # LLM tool-calling & CoT forensic audit agent
 │       └── report_agent.py    # FPDF PDF report & JSON artifact generation agent
+├── monitoring/
+│   ├── namespace.yaml         # Kubernetes monitoring namespace manifest
+│   ├── service-monitor.yaml   # ServiceMonitor CRD for Prometheus scraping
+│   ├── alerts/
+│   │   └── app-alerts.yaml    # PrometheusRule alerting definitions (5xx error rate > 5%)
+│   └── dashboards/
+│       └── finagent-dashboard.json # Grafana Golden Signals dashboard configuration
 ├── scripts/
+│   ├── deploy-monitoring.sh   # Automated Helm deployment script for Prometheus & Grafana stack
 │   ├── github_deploy.py       # GitHub repository sync & release deployment script
 │   └── linkedin_poster.py     # Automated technical announcement publisher
 ├── tests/
@@ -101,6 +109,38 @@ finagent-ops/
 ├── README.md                  # Comprehensive system documentation
 └── main.py                    # Application entry point (CLI & FastAPI server)
 ```
+
+---
+
+## 📊 Observability & Monitoring Pipeline (Prometheus + Grafana)
+
+### 1. Test Application Metrics Endpoint Locally
+When running the FastAPI web service, standard HTTP metrics and request metrics are exposed via Prometheus format at `/metrics`:
+```bash
+python main.py --mode api --port 8000
+curl http://localhost:8000/metrics
+```
+
+### 2. Deploy Monitoring Stack to Kubernetes
+Automate the installation of `kube-prometheus-stack` via Helm, apply the `monitoring` namespace, create the `ServiceMonitor` to scrape port 8000, and configure custom Prometheus alert rules:
+```bash
+./scripts/deploy-monitoring.sh
+```
+
+### 3. Access Prometheus & Grafana Dashboards
+- **Prometheus UI**: Port-forward service and navigate to `http://localhost:9090`
+  ```bash
+  kubectl port-forward -n monitoring svc/prometheus-stack-kube-prometheus-prometheus 9090:9090
+  ```
+- **Grafana Dashboard**: Port-forward service and navigate to `http://localhost:3000` (Default Credentials: `admin` / `admin`)
+  ```bash
+  kubectl port-forward -n monitoring svc/prometheus-stack-grafana 3000:80
+  ```
+  Import `monitoring/dashboards/finagent-dashboard.json` into Grafana to view real-time tracking of the 4 Golden Signals (Latency, Traffic, Errors, Saturation).
+
+### 4. Alerting as Code Rules
+Alerting is configured via `monitoring/alerts/app-alerts.yaml` (`PrometheusRule` CRD). An alert (`High5xxErrorRate`) triggers when HTTP 5xx errors exceed 5% over a 5-minute window:
+`rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05`
 
 ---
 
