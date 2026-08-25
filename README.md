@@ -1,183 +1,113 @@
-# FinAgent-Ops: Autonomous Multi-Agent Financial Reconciliation & Fraud Detection Engine
+# PASHA-OS: Predictive Autonomous System for Holistic Administration
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-green.svg)](https://fastapi.tiangolo.com/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-StateGraph-orange.svg)](https://github.com/langchain-ai/langgraph)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.28%2B-blue.svg)](https://kubernetes.io/)
-[![Terraform](https://img.shields.io/badge/Terraform-1.5%2B-purple.svg)](https://www.terraform.io/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.0-green.svg)](https://fastapi.tiangolo.com/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-0.2.39-orange.svg)](https://github.com/langchain-ai/langgraph)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.39.0-red.svg)](https://streamlit.io/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**FinAgent-Ops** is an enterprise-grade, multi-agent autonomous framework implemented in Python, LangGraph, FastAPI, Docker, and Kubernetes. It ingests ERP financial ledger transactions and bank statements, performs deterministic rule-matching and statistical Isolation Forest ML anomaly detection, runs forensic LLM tool-calling and Chain-of-Thought (CoT) audit evaluations, exports PDF/JSON audit artifacts, and automates zero-downtime Kubernetes orchestration via Terraform IaC and GitOps CI/CD pipelines.
+**PASHA-OS** (Predictive Autonomous System for Holistic Administration) is an enterprise-grade Autonomous CEO Enterprise Intelligence OS designed to assist C-Suite executives with real-time risk assessment, financial runway forecasting, legal contract audit, supply chain optimization, employee turnover prediction, and corporate strategy decision-making.
 
 ---
 
-## 🏗️ Multi-Agent System Architecture
+## 🏗️ Multi-Agent Architecture & Flow
 
-```text
-                                  +-----------------------+
-                                  |   Ledger & Bank CSVs  |
-                                  +-----------+-----------+
-                                              |
-                                              v
-                                  +-----------------------+
-                                  | Ingestion Agent       |
-                                  | Schema Validation     |
-                                  +-----------+-----------+
-                                              |
-                                              v
-                                  +-----------------------+
-                                  | Reconciliation Agent  |
-                                  | Deterministic + ML    |
-                                  | (Isolation Forest)    |
-                                  +-----------+-----------+
-                                              |
-                                              v
-                                  +-----------------------+
-                                  | Forensic Audit Agent  |
-                                  | Tool Calling & CoT    |
-                                  | Risk Level (L/M/H/C)  |
-                                  +-----------+-----------+
-                                              |
-                                              v
-                                  +-----------------------+
-                                  | Report Agent          |
-                                  | PDF & JSON Artifacts  |
-                                  +-----------------------+
+```mermaid
+graph TD
+    A[Enterprise Data Feed] --> B[PashaOrchestrator]
+    B --> C[CFO Agent: Cashflow & Runway]
+    B --> D[CMO Agent: Sentiment & Competitor Threat]
+    B --> E[COO Agent: Linear Supply Optimization]
+    B --> F[CHRO Agent: XGBoost Attrition Model]
+    B --> G[Legal Agent: 10 Statutory Audit Rules]
+    B --> H[Investor Agent: ARR & Valuation Synthesis]
+
+    C --> I[LangGraph CEO StateGraph]
+    D --> I
+    E --> I
+    F --> I
+    G --> I
+    H --> I
+
+    I --> J{Board Decision Node}
+    J -->|Aggregated Risk > 0.7| K[HALT_EXPANSION]
+    J -->|Aggregated Risk <= 0.7| L[APPROVE_GROWTH]
+
+    K --> M[Streamlit CEO Command Center & REST API]
+    L --> M
 ```
 
 ---
 
-## 🤖 Implemented Multi-Agent Architecture
+## 🤖 C-Suite Autonomous Agents
 
-1. **Ingestion & Validation Agent (`src/agents/ingest_agent.py`)**: Validates transaction schemas, handles ERP/ledger reconciliation mismatches, and normalizes tabular data.
-2. **Reconciliation & Anomaly Agent (`src/agents/recon_agent.py`)**: Executes deterministic rule-matching combined with statistical isolation forest algorithms to detect discrepancies.
-3. **Forensic Audit LLM Agent (`src/agents/audit_agent.py`)**: Uses tool calling and chain-of-thought reflection to analyze flagged transactions, assign risk scores (Low/Medium/High/Critical), and generate root-cause explanations.
-4. **Report & Notification Agent (`src/agents/report_agent.py`)**: Generates PDF audit reports (via FPDF2) and structured JSON artifacts.
-5. **Supervisor Orchestrator (`src/graph_orchestrator.py`)**: LangGraph StateGraph managing inter-agent message routing and workflow state transitions.
-
----
-
-## 📁 Repository Structure
-
-```text
-finagent-ops/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml              # Python build and test workflow
-│       └── k8s-deploy.yml      # GitOps Terraform & Kubernetes rollout workflow
-├── data/
-│   ├── sample_ledger.csv      # Sample ERP financial ledger transactions
-│   └── bank_statement.csv     # Sample bank statement transaction feed
-├── k8s/
-│   ├── deployment.yaml        # Multi-replica microservice rollout & probes
-│   ├── service.yaml           # ClusterIP & LoadBalancer networking
-│   ├── hpa.yaml               # Dynamic scaling (2-10 replicas, 70% target)
-│   ├── configmap-secret.yaml  # Environment configuration & secret management
-│   └── ingress.yaml           # TLS termination & path-based routing
-├── terraform/
-│   ├── main.tf                # EKS cluster, VPC, IAM, SG, ECR resources
-│   ├── variables.tf           # Terraform variables & configurable inputs
-│   ├── outputs.tf             # Infrastructure outputs
-│   └── providers.tf           # AWS provider & S3/DynamoDB remote state backend
-├── src/
-│   ├── __init__.py
-│   ├── models.py              # Core Pydantic data models & LangGraph state
-│   ├── graph_orchestrator.py  # LangGraph StateGraph orchestration graph
-│   └── agents/
-│       ├── __init__.py
-│       ├── ingest_agent.py    # Schema validation & data normalization agent
-│       ├── recon_agent.py     # Deterministic & ML Isolation Forest matching agent
-│       ├── audit_agent.py     # LLM tool-calling & CoT forensic audit agent
-│       └── report_agent.py    # FPDF PDF report & JSON artifact generation agent
-├── scripts/
-│   ├── github_deploy.py       # GitHub repository sync & release deployment script
-│   └── linkedin_poster.py     # Automated technical announcement publisher
-├── tests/
-│   ├── test_agents.py         # Unit tests for multi-agent components
-│   └── test_orchestrator.py   # Integration tests for LangGraph & FastAPI REST endpoints
-├── Dockerfile                 # Multi-stage production container setup
-├── .env.example               # Template environment configuration file
-├── requirements.txt           # Python dependencies
-├── README.md                  # Comprehensive system documentation
-└── main.py                    # Application entry point (CLI & FastAPI server)
-```
+| Agent | Class | Core Responsibility | Technique / Library |
+|---|---|---|---|
+| **CFO Agent** | `CFOAgent` | Cashflow forecasting, liquidity runway, financial risk assessment | NumPy, Linear Trend Analysis |
+| **CMO Agent** | `CMOAgent` | Market sentiment scoring, competitor intelligence threat matrix | NLP Lexicon Analysis |
+| **COO Agent** | `COOAgent` | Global supply chain distribution & cost minimization | PuLP Linear Programming |
+| **CHRO Agent**| `CHROAgent`| Workforce turnover and high-risk attrition prediction | XGBoost Machine Learning |
+| **Legal Agent**| `LegalAgent`| Regulatory statutory rule auditing and contract risk assessment | Statutory Rule Engine (10 Rules) |
+| **Investor Agent**| `InvestorAgent`| Investor relations, ARR tracking, valuation multiple synthesis | Enterprise Financial Modeling |
+| **Strategy CEO Agent**| `ceo_app` | Executive decision synthesis (HALT_EXPANSION / APPROVE_GROWTH) | LangGraph StateGraph |
 
 ---
 
-## 🚀 Quickstart & Usage
+## 🛠️ Tech Stack
 
-### 1. Installation
+* **Core AI & Workflow Orchestration**: LangGraph (0.2.39), LangChain (0.3.7), FAISS (1.8.0), ChromaDB (0.5.18)
+* **API & Real-time WebSockets**: FastAPI (0.115.0), Uvicorn, WebSockets, Prometheus Client
+* **Dashboard & Visualizations**: Streamlit (1.39.0), Plotly (5.24.1), FPDF2, python-pptx
+* **Analytics & Optimization**: Prophet, XGBoost, scikit-learn, PuLP, NumPy
+* **Testing & Quality Assurance**: Pytest (8.3.2), Flake8 (7.1.0)
+
+---
+
+## 🚀 Quick Start
+
+### 1. Local Setup
 ```bash
-git clone https://github.com/your-username/finagent-ops.git
-cd finagent-ops
+git clone https://github.com/your-org/PASHA-OS.git
+cd PASHA-OS
 pip install -r requirements.txt
 ```
 
-### 2. Run CLI Reconciliation Workflow
-Execute the end-to-end multi-agent pipeline from the command line:
+### 2. Run FastAPI Web Service
 ```bash
-python main.py --mode cli --ledger data/sample_ledger.csv --bank data/bank_statement.csv
+uvicorn api.main:app --host 0.0.0.0 --port 8000
 ```
+* Interactive Swagger Docs: `http://localhost:8000/docs`
+* Prometheus Telemetry: `http://localhost:8000/metrics`
 
-### 3. Run FastAPI Web Service
-Start the REST API server:
+### 3. Launch Streamlit Executive Command Center
 ```bash
-python main.py --mode api --port 8000
+streamlit run dashboard/app.py
 ```
-
-Access API Documentation:
-- Swagger UI: `http://localhost:8000/docs`
-
-### 4. Trigger Reconciliation via API
-```bash
-curl -X POST "http://localhost:8000/api/v1/reconcile" \
-     -H "Content-Type: application/json" \
-     -d '{"ledger_csv_path": "data/sample_ledger.csv", "bank_csv_path": "data/bank_statement.csv"}'
-```
-
----
-
-## ☸️ Infrastructure-as-Code & Kubernetes GitOps
-
-### Provision Infrastructure with Terraform
-```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
-```
-
-### Deploy to Kubernetes
-```bash
-kubectl apply -f k8s/configmap-secret.yaml
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
-kubectl apply -f k8s/hpa.yaml
-kubectl apply -f k8s/ingress.yaml
-```
+* Access Dashboard: `http://localhost:8501`
 
 ---
 
 ## 🐳 Docker Deployment
 
-Build and run using Docker:
+Run all services (FastAPI, Streamlit Dashboard, Prometheus) with Docker Compose:
+
 ```bash
-docker build -t finagent-ops:latest .
-docker run -p 8000:8000 finagent-ops:latest
+docker-compose up --build
 ```
 
 ---
 
 ## 🧪 Testing & Code Quality
 
-Run tests using `pytest`:
+Run full unit and integration test suite:
 ```bash
-python -m pytest tests/ -v
+python3 -m pytest tests/ -v
 ```
 
-Check PEP8 compliance using `flake8`:
+Run PEP8 compliance check:
 ```bash
-flake8 src scripts tests main.py
+flake8 . --max-line-length=120
 ```
 
 ---
