@@ -1,4 +1,4 @@
-"""FastAPI Pydantic Request/Response Schemas for PASHA-OS REST API."""
+"""FastAPI Pydantic Request/Response Schemas for PASHA-OS 20-Agent REST API."""
 
 from typing import Dict, List, Any, Optional
 from pydantic import BaseModel, Field
@@ -26,6 +26,24 @@ class CMOAgentInput(BaseModel):
 
     text: str = Field(default="Market expansion is yielding excellent revenue growth")
     competitors: Optional[List[str]] = Field(default_factory=lambda: ["CompetitorA", "CompetitorB"])
+
+
+class ResearchQueryInput(BaseModel):
+    """Input schema for online research pipeline endpoint."""
+
+    query: str = Field(..., description="Target query or research theme.")
+    topic: Optional[str] = Field(default="Enterprise MNC OS")
+
+
+class MeetingRunInput(BaseModel):
+    """Input schema for triggering department meetings."""
+
+    meeting_type: str = Field(
+        default="DAILY_STANDUP", description="DAILY_STANDUP, WEEKLY_DEPARTMENT, or MONTHLY_BOARD"
+    )
+    department: Optional[str] = Field(
+        default="ENGINEERING DIVISION", description="Target division for weekly meetings."
+    )
 
 
 class GenericAgentResponse(BaseModel):
