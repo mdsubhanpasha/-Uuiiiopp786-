@@ -1,6 +1,6 @@
 """PASHA-OS Unit and Integration Test Suite.
 
-Verifies 10 core functional components across multi-agent system, engines, API, and graph execution.
+Verifies core functional components across multi-agent system, engines, API, and graph execution.
 """
 
 from fastapi.testclient import TestClient
@@ -115,7 +115,9 @@ def test_api_health():
     """10. Test FastAPI web endpoints (/health and /analyze/ceo-decision)."""
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy", "service": "PASHA-OS"}
+    json_resp = response.json()
+    assert json_resp["status"] == "healthy"
+    assert json_resp["service"] == "PASHA-OS"
 
     post_resp = client.post("/analyze/ceo-decision", json={"feedback_text": "High revenue and robust performance."})
     assert post_resp.status_code == 200

@@ -1,13 +1,19 @@
-"""Legal Agent for regulatory compliance, contract analysis, and rule checking."""
+"""Legal / CLO Agent for statutory regulatory compliance, contract analysis, and risk auditing."""
 
 from typing import Dict, List, Any
+from agents.base_agent import BaseAgent
 
 
-class LegalAgent:
-    """Chief Legal Officer & General Counsel Autonomous Agent."""
+class LegalAgent(BaseAgent):
+    """Chief Legal Officer / General Counsel Autonomous Agent."""
 
     def __init__(self) -> None:
-        """Initialize Legal Agent with 10 statutory regulatory compliance rules."""
+        """Initialize Legal Agent with statutory compliance rules."""
+        super().__init__(
+            agent_name="CLO / Legal Agent",
+            role="Legal Compliance, Contract Audit, Statutory Risk Analysis",
+            division="CORE C-SUITE",
+        )
         self.statutory_rules = [
             {"id": "RULE_01", "keywords": ["indemnification", "unlimited liability"], "risk_weight": 0.3},
             {"id": "RULE_02", "keywords": ["gdpr", "data privacy", "pii breach"], "risk_weight": 0.25},
@@ -28,13 +34,15 @@ class LegalAgent:
             text (str): Contract string text.
 
         Returns:
-            Dict[str, Any]: Risk score and list of triggered clauses.
+            Dict[str, Any]: Risk score, flagged clauses, and ReAct decision report.
         """
         if not text:
             text = (
                 "This agreement includes unlimited liability indemnification and "
                 "offshore governing law jurisdiction with penalty clauses."
             )
+
+        research = self.research_tool(query="Enterprise contract indemnification liability compliance standards")
 
         text_lower = text.lower()
         accumulated_risk = 0.0
@@ -48,9 +56,32 @@ class LegalAgent:
                     break
 
         normalized_risk = min(1.0, round(accumulated_risk, 2))
+        compliance_status = "NON_COMPLIANT" if normalized_risk > 0.5 else "COMPLIANT"
 
-        return {
-            "risk_score": normalized_risk,
-            "flagged_clauses": flagged_clauses,
-            "compliance_status": "NON_COMPLIANT" if normalized_risk > 0.5 else "COMPLIANT",
-        }
+        reasoning = (
+            f"Audited contract text against 10 statutory regulatory rules. Triggered "
+            f"{len(flagged_clauses)} risk flags. Calculated composite legal risk score of "
+            f"{normalized_risk}. Legal benchmark research from {research['source_used']} "
+            f"mandates clause revision for non-compliant contracts."
+        )
+
+        return self.format_decision(
+            reasoning=reasoning,
+            data_sources=[research["source_used"], "Statutory Contract Audit Rule Engine"],
+            alternatives_considered=[
+                "Accept terms as drafted with risk rider",
+                "Negotiate liability cap and domestic governing jurisdiction",
+                "Reject contract due to statutory violation",
+            ],
+            final_decision={"compliance_status": compliance_status, "risk_score": normalized_risk},
+            confidence_score=0.96,
+            extra_fields={
+                "risk_score": normalized_risk,
+                "flagged_clauses": flagged_clauses,
+                "compliance_status": compliance_status,
+            },
+        )
+
+
+# Alias for CLO Agent compatibility
+CLOAgent = LegalAgent
