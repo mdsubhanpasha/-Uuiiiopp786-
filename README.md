@@ -1,226 +1,24 @@
-# FinAgent-Ops: Autonomous Multi-Agent Financial Reconciliation & Fraud Detection Engine
+<p align="center">
+  <img src="assets/cover.png" alt="PASHA-OS Banner" width="100%">
+</p>
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-green.svg)](https://fastapi.tiangolo.com/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-StateGraph-orange.svg)](https://github.com/langchain-ai/langgraph)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.28%2B-blue.svg)](https://kubernetes.io/)
-[![Terraform](https://img.shields.io/badge/Terraform-1.5%2B-purple.svg)](https://www.terraform.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<h1 align="center">PASHA-OS</h1>
+<p align="center"><strong>Autonomous C-Suite AI Operating System</strong><br>7 Agents. 1 Objective. Zero Downtime.</p>
 
-**FinAgent-Ops** is an enterprise-grade, multi-agent autonomous framework implemented in Python, LangGraph, FastAPI, Docker, and Kubernetes. It ingests ERP financial ledger transactions and bank statements, performs deterministic rule-matching and statistical Isolation Forest ML anomaly detection, runs forensic LLM tool-calling and Chain-of-Thought (CoT) audit evaluations, exports PDF/JSON audit artifacts, and automates zero-downtime Kubernetes orchestration via Terraform IaC and GitOps CI/CD pipelines.
+## 🚀 What is PASHA-OS?
+CEO, CFO, CTO, CMO, COO, CHRO, Legal - 7 AI Agents
 
----
+## 📊 Monitoring (NEW from PR #11)
+- **Metrics:** `/metrics` endpoint with prometheus-fastapi-instrumentator
+- **K8s:** `monitoring` namespace, ServiceMonitor, PodMonitor
+- **Grafana:** Golden Signals Dashboard
+- **Alerts:** HTTP 5xx, latency, crash loops
+- **Deploy:** `scripts/deploy-monitoring.sh`
 
-## 🏗️ Multi-Agent System Architecture
+## 🛠️ Tech Stack
+Python | LangGraph | FastAPI | Streamlit | Docker | Prometheus | Grafana
 
-```text
-                                  +-----------------------+
-                                  |   Ledger & Bank CSVs  |
-                                  +-----------+-----------+
-                                              |
-                                              v
-                                  +-----------------------+
-                                  | Ingestion Agent       |
-                                  | Schema Validation     |
-                                  +-----------+-----------+
-                                              |
-                                              v
-                                  +-----------------------+
-                                  | Reconciliation Agent  |
-                                  | Deterministic + ML    |
-                                  | (Isolation Forest)    |
-                                  +-----------+-----------+
-                                              |
-                                              v
-                                  +-----------------------+
-                                  | Forensic Audit Agent  |
-                                  | Tool Calling & CoT    |
-                                  | Risk Level (L/M/H/C)  |
-                                  +-----------+-----------+
-                                              |
-                                              v
-                                  +-----------------------+
-                                  | Report Agent          |
-                                  | PDF & JSON Artifacts  |
-                                  +-----------------------+
-```
+## 📸 Demo
+![Dashboard](assets/cover.png)
 
----
-
-## 🤖 Implemented Multi-Agent Architecture
-
-1. **Ingestion & Validation Agent (`src/agents/ingest_agent.py`)**: Validates transaction schemas, handles ERP/ledger reconciliation mismatches, and normalizes tabular data.
-2. **Reconciliation & Anomaly Agent (`src/agents/recon_agent.py`)**: Executes deterministic rule-matching combined with statistical isolation forest algorithms to detect discrepancies.
-3. **Forensic Audit LLM Agent (`src/agents/audit_agent.py`)**: Uses tool calling and chain-of-thought reflection to analyze flagged transactions, assign risk scores (Low/Medium/High/Critical), and generate root-cause explanations.
-4. **Report & Notification Agent (`src/agents/report_agent.py`)**: Generates PDF audit reports (via FPDF2) and structured JSON artifacts.
-5. **Supervisor Orchestrator (`src/graph_orchestrator.py`)**: LangGraph StateGraph managing inter-agent message routing and workflow state transitions.
-
----
-
-## 📁 Repository Structure
-
-```text
-finagent-ops/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml              # Python build and test workflow
-│       └── k8s-deploy.yml      # GitOps Terraform & Kubernetes rollout workflow
-├── data/
-│   ├── sample_ledger.csv      # Sample ERP financial ledger transactions
-│   └── bank_statement.csv     # Sample bank statement transaction feed
-├── k8s/
-│   ├── deployment.yaml        # Multi-replica microservice rollout & probes
-│   ├── service.yaml           # ClusterIP & LoadBalancer networking
-│   ├── hpa.yaml               # Dynamic scaling (2-10 replicas, 70% target)
-│   ├── configmap-secret.yaml  # Environment configuration & secret management
-│   └── ingress.yaml           # TLS termination & path-based routing
-├── terraform/
-│   ├── main.tf                # EKS cluster, VPC, IAM, SG, ECR resources
-│   ├── variables.tf           # Terraform variables & configurable inputs
-│   ├── outputs.tf             # Infrastructure outputs
-│   └── providers.tf           # AWS provider & S3/DynamoDB remote state backend
-├── src/
-│   ├── __init__.py
-│   ├── models.py              # Core Pydantic data models & LangGraph state
-│   ├── graph_orchestrator.py  # LangGraph StateGraph orchestration graph
-│   └── agents/
-│       ├── __init__.py
-│       ├── ingest_agent.py    # Schema validation & data normalization agent
-│       ├── recon_agent.py     # Deterministic & ML Isolation Forest matching agent
-│       ├── audit_agent.py     # LLM tool-calling & CoT forensic audit agent
-│       └── report_agent.py    # FPDF PDF report & JSON artifact generation agent
-├── monitoring/
-│   ├── namespace.yaml         # Kubernetes monitoring namespace manifest
-│   ├── service-monitor.yaml   # ServiceMonitor CRD for Prometheus scraping
-│   ├── alerts/
-│   │   └── app-alerts.yaml    # PrometheusRule alerting definitions (5xx error rate > 5%)
-│   └── dashboards/
-│       └── finagent-dashboard.json # Grafana Golden Signals dashboard configuration
-├── scripts/
-│   ├── deploy-monitoring.sh   # Automated Helm deployment script for Prometheus & Grafana stack
-│   ├── github_deploy.py       # GitHub repository sync & release deployment script
-│   └── linkedin_poster.py     # Automated technical announcement publisher
-├── tests/
-│   ├── test_agents.py         # Unit tests for multi-agent components
-│   └── test_orchestrator.py   # Integration tests for LangGraph & FastAPI REST endpoints
-├── Dockerfile                 # Multi-stage production container setup
-├── .env.example               # Template environment configuration file
-├── requirements.txt           # Python dependencies
-├── README.md                  # Comprehensive system documentation
-└── main.py                    # Application entry point (CLI & FastAPI server)
-```
-
----
-
-## 📊 Observability & Monitoring Pipeline (Prometheus + Grafana)
-
-### 1. Test Application Metrics Endpoint Locally
-When running the FastAPI web service, standard HTTP metrics and request metrics are exposed via Prometheus format at `/metrics`:
-```bash
-python main.py --mode api --port 8000
-curl http://localhost:8000/metrics
-```
-
-### 2. Deploy Monitoring Stack to Kubernetes
-Automate the installation of `kube-prometheus-stack` via Helm, apply the `monitoring` namespace, create the `ServiceMonitor` to scrape port 8000, and configure custom Prometheus alert rules:
-```bash
-./scripts/deploy-monitoring.sh
-```
-
-### 3. Access Prometheus & Grafana Dashboards
-- **Prometheus UI**: Port-forward service and navigate to `http://localhost:9090`
-  ```bash
-  kubectl port-forward -n monitoring svc/prometheus-stack-kube-prometheus-prometheus 9090:9090
-  ```
-- **Grafana Dashboard**: Port-forward service and navigate to `http://localhost:3000` (Default Credentials: `admin` / `admin`)
-  ```bash
-  kubectl port-forward -n monitoring svc/prometheus-stack-grafana 3000:80
-  ```
-  Import `monitoring/dashboards/finagent-dashboard.json` into Grafana to view real-time tracking of the 4 Golden Signals (Latency, Traffic, Errors, Saturation).
-
-### 4. Alerting as Code Rules
-Alerting is configured via `monitoring/alerts/app-alerts.yaml` (`PrometheusRule` CRD). An alert (`High5xxErrorRate`) triggers when HTTP 5xx errors exceed 5% over a 5-minute window:
-`rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05`
-
----
-
-## 🚀 Quickstart & Usage
-
-### 1. Installation
-```bash
-git clone https://github.com/your-username/finagent-ops.git
-cd finagent-ops
-pip install -r requirements.txt
-```
-
-### 2. Run CLI Reconciliation Workflow
-Execute the end-to-end multi-agent pipeline from the command line:
-```bash
-python main.py --mode cli --ledger data/sample_ledger.csv --bank data/bank_statement.csv
-```
-
-### 3. Run FastAPI Web Service
-Start the REST API server:
-```bash
-python main.py --mode api --port 8000
-```
-
-Access API Documentation:
-- Swagger UI: `http://localhost:8000/docs`
-
-### 4. Trigger Reconciliation via API
-```bash
-curl -X POST "http://localhost:8000/api/v1/reconcile" \
-     -H "Content-Type: application/json" \
-     -d '{"ledger_csv_path": "data/sample_ledger.csv", "bank_csv_path": "data/bank_statement.csv"}'
-```
-
----
-
-## ☸️ Infrastructure-as-Code & Kubernetes GitOps
-
-### Provision Infrastructure with Terraform
-```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
-```
-
-### Deploy to Kubernetes
-```bash
-kubectl apply -f k8s/configmap-secret.yaml
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
-kubectl apply -f k8s/hpa.yaml
-kubectl apply -f k8s/ingress.yaml
-```
-
----
-
-## 🐳 Docker Deployment
-
-Build and run using Docker:
-```bash
-docker build -t finagent-ops:latest .
-docker run -p 8000:8000 finagent-ops:latest
-```
-
----
-
-## 🧪 Testing & Code Quality
-
-Run tests using `pytest`:
-```bash
-python -m pytest tests/ -v
-```
-
-Check PEP8 compliance using `flake8`:
-```bash
-flake8 src scripts tests main.py
-```
-
----
-
-## 📄 License
-Distributed under the MIT License.
+Built by @mdsubhanpasha

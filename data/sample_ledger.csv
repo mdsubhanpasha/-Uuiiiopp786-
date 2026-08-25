@@ -1,8 +1,0 @@
-transaction_id,date,amount,currency,vendor,description,reference_id
-TXN-1001,2025-01-10,12500.00,USD,Acme Corp,Enterprise Cloud Subscription,REF-9871
-TXN-1002,2025-01-11,450.50,USD,Office Depot,Office Supplies and Furniture,REF-9872
-TXN-1003,2025-01-12,89000.00,USD,Global Logistics Inc,Freight Shipping Q1,REF-9873
-TXN-1004,2025-01-13,1200.00,USD,Unknown Wire,Uncategorized Wire Transfer,REF-9874
-TXN-1005,2025-01-14,3400.00,USD,TechServices LLC,IT Consulting Services,REF-9875
-TXN-1006,2025-01-15,99999.99,USD,Offshore Entity X,Urgent Capital Transfer,REF-9876
-TXN-1007,2025-01-16,150.00,USD,Starbucks Coffee,Team Catering Event,REF-9877
