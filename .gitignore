@@ -1,16 +1,21 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-.pytest_cache/
-.chroma/
-*.db
-*.sqlite
-.venv/
+*.so
+.Python
 env/
 venv/
 ENV/
-build/
-dist/
-*.egg-info/
+env.bak/
+venv.bak/
+.pytest_cache/
+
+# Environment variables
+.env
+!.env.example
+
+# IDE / OS
 .DS_Store
-*.log
+.idea/
+.vscode/
