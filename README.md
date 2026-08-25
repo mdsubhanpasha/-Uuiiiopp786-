@@ -3,42 +3,22 @@
 </p>
 
 <h1 align="center">PASHA-OS</h1>
-<p align="center">
-  <strong>Autonomous C-Suite AI Operating System</strong><br>
-  7 Agents. 1 Objective. Zero Downtime.
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.12-blue?logo=python" />
-  <img src="https://img.shields.io/badge/LangGraph-Agentic-orange" />
-  <img src="https://img.shields.io/badge/FastAPI-Backend-green" />
-  <img src="https://img.shields.io/badge/Streamlit-Dashboard-red" />
-  <img src="https://img.shields.io/badge/Docker-Ready-blue" />
-</p>
-
----
+<p align="center"><strong>Autonomous C-Suite AI Operating System</strong><br>7 Agents. 1 Objective. Zero Downtime.</p>
 
 ## 🚀 What is PASHA-OS?
-An Autonomous C-Suite AI Operating System that runs your company 24/7 with 7 AI agents:
-- **CEO** - Strategic Command
-- **CFO** - Finance & Forecasting  
-- **CTO** - Infrastructure & Engineering
-- **CMO** - Marketing & Growth
-- **COO** - Operations & Logistics
-- **CHRO** - People & Culture
-- **Legal** - Compliance & Risk
+CEO, CFO, CTO, CMO, COO, CHRO, Legal - 7 AI Agents
 
-## ✨ Features
-- CEO Dashboard with real-time metrics
-- LangGraph multi-agent orchestration
-- FastAPI backend + Streamlit frontend
-- Dockerized for production
+## 📊 Monitoring (NEW from PR #11)
+- **Metrics:** `/metrics` endpoint with prometheus-fastapi-instrumentator
+- **K8s:** `monitoring` namespace, ServiceMonitor, PodMonitor
+- **Grafana:** Golden Signals Dashboard
+- **Alerts:** HTTP 5xx, latency, crash loops
+- **Deploy:** `scripts/deploy-monitoring.sh`
 
 ## 🛠️ Tech Stack
-Python | LangGraph | FastAPI | Streamlit | Docker
+Python | LangGraph | FastAPI | Streamlit | Docker | Prometheus | Grafana
 
 ## 📸 Demo
 ![Dashboard](assets/cover.png)
 
----
-Built by [@mdsubhanpasha](https://github.com/mdsubhanpasha)
+Built by @mdsubhanpasha

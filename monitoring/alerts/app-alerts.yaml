@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: finagent-ops-alerts
+  namespace: monitoring
+  labels:
+    app: finagent-ops
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: finagent-ops.rules
+      rules:
+        - alert: High5xxErrorRate
+          expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High 5xx HTTP Error Rate on FinAgent-Ops"
+            description: "HTTP 5xx error rate has exceeded 5% over the last 5 minutes (current value: {{ $value }})."
