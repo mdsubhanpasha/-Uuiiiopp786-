@@ -1,0 +1,262 @@
+name: DevSecOps Lifecycle Pipeline
+
+on:
+  push:
+    branches: [ "main", "master", "pasha" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+  security-events: write
+
+env:
+  AWS_REGION: us-east-1
+  IMAGE_NAME: pasha-os-app
+  DOCKER_REGISTRY: docker.io
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Stage 1: Secret Detection (Gitleaks)
+  # ---------------------------------------------------------------------------
+  secret-scan:
+    name: 🔑 Secret Scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks Secret Scanner
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Upload Gitleaks Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-scan-report
+          path: gitleaks.sarif
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Stage 2: Static Application Security Testing (SonarQube / SAST)
+  # ---------------------------------------------------------------------------
+  sast-scan:
+    name: 🧬 SAST Scan (SonarQube)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: SonarQube / SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY || 'pasha-os' }}
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION || 'pasha-org' }}
+            -Dsonar.sources=.
+            -Dsonar.exclusions=**/tests/**,**/node_modules/**,**/venv/**
+            -Dsonar.python.version=3.11
+        continue-on-error: true
+
+  # ---------------------------------------------------------------------------
+  # Stage 3: Software Composition Analysis (Trivy Filesystem)
+  # ---------------------------------------------------------------------------
+  sca-scan:
+    name: 📦 SCA Scan (Trivy Filesystem)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy Filesystem Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy FS Scan Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-filesystem-report
+          path: trivy-fs-results.sarif
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Stage 4: Infrastructure as Code Scan (Checkov - Terraform)
+  # ---------------------------------------------------------------------------
+  iac-scan:
+    name: 🛡️ IaC Scan (Checkov)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Checkov IaC Scanner
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: 'terraform/'
+          framework: 'terraform'
+          output_format: 'sarif'
+          output_file_path: 'checkov-results.sarif'
+          soft_fail: true
+
+      - name: Upload Checkov IaC Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkov-iac-report
+          path: checkov-results.sarif
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Stage 5: Container Build with Layer Caching & Trivy Image Scan (Gate)
+  # ---------------------------------------------------------------------------
+  container-build-and-scan:
+    name: 🐳 Docker Build & Image Scan
+    needs: [secret-scan, sast-scan, sca-scan, iac-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image (Layer Caching)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy Container Image Security Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ env.IMAGE_NAME }}:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL'
+
+      - name: Run Trivy Container Image Scan (SARIF Report Output)
+        if: always()
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ env.IMAGE_NAME }}:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+
+      - name: Upload Container Scan Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-container-image-report
+          path: trivy-image-results.sarif
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Stage 6: AWS OIDC Authentication & Automated Deployment to EC2 via SSH
+  # ---------------------------------------------------------------------------
+  deploy-ec2:
+    name: 🚀 Deploy to AWS EC2 via SSH
+    needs: container-build-and-scan
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/pasha'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC Ready)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+
+      - name: Log in to Docker Hub (or Container Registry)
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker Image to Registry
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+
+      - name: SSH Remote Deployment to AWS EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME || 'ec2-user' }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            echo "Pulling latest Docker image..."
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+            echo "Stopping existing container..."
+            sudo docker stop pasha-os-app || true
+            sudo docker rm pasha-os-app || true
+            echo "Running new container instance..."
+            sudo docker run -d --name pasha-os-app -p 8000:8000 --restart always ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+            echo "Container successfully deployed and started."
+
+  # ---------------------------------------------------------------------------
+  # Stage 7: Dynamic Application Security Testing (OWASP ZAP DAST Scan)
+  # ---------------------------------------------------------------------------
+  dast-scan:
+    name: ⚡ DAST Scan (OWASP ZAP Baseline)
+    needs: deploy-ec2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: OWASP ZAP Baseline DAST Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target: 'http://${{ secrets.EC2_HOST }}:8000'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+          allow_issue_writing: false
+        continue-on-error: true
+
+      - name: Upload OWASP ZAP DAST Scan Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owasp-zap-dast-report
+          path: zap_scan.html
+          if-no-files-found: ignore
