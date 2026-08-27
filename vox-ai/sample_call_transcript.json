@@ -1,0 +1,198 @@
+[
+  {
+    "turn": 1,
+    "user_speech": "Hello, I would like to check the status of my order ORD-1001 please.",
+    "events": [
+      {
+        "chunk_index": 0,
+        "tts_latency_ms": 240.41,
+        "audio_byte_len": 12844
+      },
+      {
+        "chunk_index": 1,
+        "tts_latency_ms": 280.41,
+        "audio_byte_len": 12844
+      }
+    ],
+    "stt": {
+      "event": "stt_complete",
+      "transcript": "Hello, I would like to check the status of my order ORD-1001 please.",
+      "stt_latency_ms": 200.46,
+      "session_id": "demo_call_record_001"
+    },
+    "sentiment": {
+      "event": "sentiment_analysis",
+      "sentiment": {
+        "score": 0.0,
+        "label": "neutral",
+        "is_angry": false,
+        "should_escalate": false,
+        "reason": null
+      },
+      "is_escalated": false,
+      "session_id": "demo_call_record_001"
+    },
+    "llm": {
+      "event": "llm_complete",
+      "response_text": "I checked your order ORD-1001 for Wireless Noise-Canceling Headphones. It is currently Shipped and estimated to arrive on 2026-03-30.",
+      "function_calls": [
+        {
+          "tool_name": "check_order",
+          "arguments": {
+            "order_id": "ORD-1001"
+          },
+          "result": {
+            "found": true,
+            "order_id": "ORD-1001",
+            "customer_name": "Alex Smith",
+            "item": "Wireless Noise-Canceling Headphones",
+            "status": "Shipped",
+            "shipping_address": "123 Tech Lane, Seattle, WA",
+            "estimated_delivery": "2026-03-30",
+            "price": 199.99
+          }
+        }
+      ],
+      "llm_latency_ms": 351.27,
+      "session_id": "demo_call_record_001"
+    },
+    "latency_breakdown": {
+      "stt_ms": 200.46,
+      "llm_ms": 351.27,
+      "tts_first_chunk_ms": 240.41,
+      "total_end_to_end_ms": 792.14,
+      "within_target": true
+    }
+  },
+  {
+    "turn": 2,
+    "user_speech": "That's great. Can you also book a support appointment for Alex on 2026-03-30 at 10:00 AM?",
+    "events": [
+      {
+        "chunk_index": 0,
+        "tts_latency_ms": 240.35,
+        "audio_byte_len": 12844
+      },
+      {
+        "chunk_index": 1,
+        "tts_latency_ms": 280.35,
+        "audio_byte_len": 12844
+      }
+    ],
+    "stt": {
+      "event": "stt_complete",
+      "transcript": "That's great. Can you also book a support appointment for Alex on 2026-03-30 at 10:00 AM?",
+      "stt_latency_ms": 200.5,
+      "session_id": "demo_call_record_001"
+    },
+    "sentiment": {
+      "event": "sentiment_analysis",
+      "sentiment": {
+        "score": 0.3,
+        "label": "positive",
+        "is_angry": false,
+        "should_escalate": false,
+        "reason": null
+      },
+      "is_escalated": false,
+      "session_id": "demo_call_record_001"
+    },
+    "llm": {
+      "event": "llm_complete",
+      "response_text": "I have scheduled your support appointment for March 30th at 10:00 AM.",
+      "function_calls": [
+        {
+          "tool_name": "book_appointment",
+          "arguments": {
+            "customer_name": "Valued Customer",
+            "date": "2026-03-30",
+            "time_slot": "10:00 AM"
+          },
+          "result": {
+            "success": true,
+            "appointment_id": "APT-88859",
+            "customer_name": "Valued Customer",
+            "date": "2026-03-30",
+            "time_slot": "10:00 AM",
+            "service_type": "Support Consultation",
+            "status": "Confirmed",
+            "message": "Appointment successfully scheduled for Valued Customer on 2026-03-30 at 10:00 AM."
+          }
+        }
+      ],
+      "llm_latency_ms": 354.66,
+      "session_id": "demo_call_record_001"
+    },
+    "latency_breakdown": {
+      "stt_ms": 200.5,
+      "llm_ms": 354.66,
+      "tts_first_chunk_ms": 240.35,
+      "total_end_to_end_ms": 795.51,
+      "within_target": true
+    }
+  },
+  {
+    "turn": 3,
+    "user_speech": "Wait, I am extremely frustrated! The delivery date is unacceptable! I want to speak to a human manager right now!",
+    "events": [
+      {
+        "chunk_index": 0,
+        "tts_latency_ms": 240.4,
+        "audio_byte_len": 12844
+      },
+      {
+        "chunk_index": 1,
+        "tts_latency_ms": 280.4,
+        "audio_byte_len": 12844
+      }
+    ],
+    "stt": {
+      "event": "stt_complete",
+      "transcript": "Wait, I am extremely frustrated! The delivery date is unacceptable! I want to speak to a human manager right now!",
+      "stt_latency_ms": 200.42,
+      "session_id": "demo_call_record_001"
+    },
+    "sentiment": {
+      "event": "sentiment_analysis",
+      "sentiment": {
+        "score": -1.0,
+        "label": "angry",
+        "is_angry": true,
+        "should_escalate": true,
+        "reason": "High customer frustration detected (keywords: unacceptable, manager, human)"
+      },
+      "is_escalated": true,
+      "session_id": "demo_call_record_001"
+    },
+    "llm": {
+      "event": "llm_complete",
+      "response_text": "I sincerely apologize for the inconvenience. I am transferring your call immediately to a senior support supervisor.",
+      "function_calls": [
+        {
+          "tool_name": "escalate_to_human",
+          "arguments": {
+            "reason": "Customer escalation",
+            "sentiment_score": -0.85
+          },
+          "result": {
+            "escalated": true,
+            "escalation_id": 1,
+            "reason": "Customer requested escalation due to issue",
+            "sentiment_score": -0.85,
+            "target_queue": "Tier-2 Human Specialist Queue",
+            "message": "Call successfully transferred to a live senior support specialist."
+          }
+        }
+      ],
+      "llm_latency_ms": 353.68,
+      "session_id": "demo_call_record_001"
+    },
+    "latency_breakdown": {
+      "stt_ms": 200.42,
+      "llm_ms": 353.68,
+      "tts_first_chunk_ms": 240.4,
+      "total_end_to_end_ms": 794.5,
+      "within_target": true
+    }
+  }
+]
