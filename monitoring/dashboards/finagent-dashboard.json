@@ -189,12 +189,44 @@
         },
         "overrides": []
       }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 5,
+      "title": "Application Logs - Real-Time LogQL Error Stream (status_code >= 500)",
+      "type": "logs",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "editorMode": "code",
+          "expr": "{job=\"kubernetes-pods\"} | json | status_code >= 500 or level=\"ERROR\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "enableLogDetails": true,
+        "showLabels": true,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableInfiniteScroll": true
+      }
     }
   ],
   "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["finagent-ops", "observability", "golden-signals"],
+  "tags": ["finagent-ops", "observability", "golden-signals", "loki-logs"],
   "time": {
     "from": "now-1h",
     "to": "now"

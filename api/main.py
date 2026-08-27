@@ -1,10 +1,16 @@
 """FastAPI Server for PASHA-OS Enterprise 20-Agent Autonomous MNC Intelligence Service."""
 
+import sys
+import time
+import datetime
+import logging
 import asyncio
-from typing import Dict, Any
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from typing import Dict, Any, Callable
+from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.responses import PlainTextResponse
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from asgi_correlation_id import CorrelationIdMiddleware, correlation_id
+from pythonjsonlogger import json
 
 from core.orchestration import PashaOrchestrator
 from api.schemas import (
@@ -16,11 +22,67 @@ from api.schemas import (
     GenericAgentResponse,
 )
 
+
+class OperationalJsonFormatter(json.JsonFormatter):
+    """Custom JSON log formatter ensuring standard operational telemetry log schema."""
+
+    def add_fields(self, log_record: Dict[str, Any], record: logging.LogRecord, message_dict: Dict[str, Any]) -> None:
+        super().add_fields(log_record, record, message_dict)
+        log_record["timestamp"] = datetime.datetime.fromtimestamp(
+            record.created, tz=datetime.timezone.utc
+        ).isoformat()
+        log_record["level"] = record.levelname
+        log_record["logger_name"] = record.name
+
+        cid = correlation_id.get()
+        if cid and "correlation_id" not in log_record:
+            log_record["correlation_id"] = cid
+
+
+logger = logging.getLogger("pasha_os")
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    log_handler = logging.StreamHandler(sys.stdout)
+    log_formatter = OperationalJsonFormatter()
+    log_handler.setFormatter(log_formatter)
+    logger.addHandler(log_handler)
+    logger.propagate = False
+
+
 app = FastAPI(
     title="PASHA-OS Enterprise 20-Agent MNC API",
     description="Predictive Autonomous System for Holistic Administration - FAANG-grade 20 Agent MNC Operating System",
     version="2.0.0",
 )
+
+app.add_middleware(CorrelationIdMiddleware, header_name="X-Correlation-ID", validator=None)
+
+
+@app.middleware("http")
+async def log_requests_middleware(request: Request, call_next: Callable[[Request], Any]) -> Response:
+    """HTTP middleware capturing telemetry metadata and streaming structured JSON logs to stdout."""
+    start_time = time.time()
+    response = await call_next(request)
+    latency_ms = round((time.time() - start_time) * 1000, 2)
+
+    cid = correlation_id.get() or request.headers.get("X-Correlation-ID") or request.headers.get("X-Request-ID") or ""
+    client_ip = request.client.host if request.client else "unknown"
+
+    log_extra = {
+        "correlation_id": cid,
+        "http_method": request.method,
+        "path": request.url.path,
+        "status_code": response.status_code,
+        "client_ip": client_ip,
+        "latency_ms": latency_ms,
+    }
+
+    logger.info(
+        f"HTTP {request.method} {request.url.path} - {response.status_code} ({latency_ms}ms)",
+        extra=log_extra,
+    )
+    return response
+
 
 orchestrator = PashaOrchestrator()
 

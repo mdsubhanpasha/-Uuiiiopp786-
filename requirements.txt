@@ -16,4 +16,5 @@ prometheus-client==0.20.0
 pytest==8.3.2
 flake8==7.1.0
 prometheus-fastapi-instrumentator
-prometheus-fastapi-instrumentator
+python-json-logger==4.2.0
+asgi-correlation-id==5.0.1

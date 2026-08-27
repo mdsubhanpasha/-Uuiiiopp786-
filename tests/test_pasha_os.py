@@ -115,12 +115,45 @@ def test_api_health():
     """10. Test FastAPI web endpoints (/health and /analyze/ceo-decision)."""
     response = client.get("/health")
     assert response.status_code == 200
+    assert "X-Correlation-ID" in response.headers
     json_resp = response.json()
     assert json_resp["status"] == "healthy"
     assert json_resp["service"] == "PASHA-OS"
 
     post_resp = client.post("/analyze/ceo-decision", json={"feedback_text": "High revenue and robust performance."})
     assert post_resp.status_code == 200
+    assert "X-Correlation-ID" in post_resp.headers
     json_data = post_resp.json()
     assert json_data["status"] == "success"
     assert "ceo_decision" in json_data["data"]
+
+
+def test_structured_logging_and_correlation_id():
+    """11. Test structured JSON logging formatter and correlation ID response header propagation."""
+    import logging
+    import json
+    import io
+    from api.main import logger as api_logger, OperationalJsonFormatter
+
+    log_stream = io.StringIO()
+    test_handler = logging.StreamHandler(log_stream)
+    test_handler.setFormatter(OperationalJsonFormatter())
+    api_logger.addHandler(test_handler)
+
+    try:
+        custom_cid = "test-correlation-id-99999"
+        res = client.get("/health", headers={"X-Correlation-ID": custom_cid})
+        assert res.status_code == 200
+        assert res.headers.get("X-Correlation-ID") == custom_cid
+
+        log_output = log_stream.getvalue().strip()
+        assert log_output != ""
+
+        log_json = json.loads(log_output.splitlines()[-1])
+        assert log_json["correlation_id"] == custom_cid
+        assert log_json["http_method"] == "GET"
+        assert log_json["path"] == "/health"
+        assert log_json["status_code"] == 200
+        assert "timestamp" in log_json
+    finally:
+        api_logger.removeHandler(test_handler)
