@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ray-Ban Meta Glasses - Privacy HUD Display Mock</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: #0d1117;
+            color: #f0f6fc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #58a6ff;
+            font-size: 1.8rem;
+        }
+        p.subtitle {
+            color: #8b949e;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+        .privacy-badge {
+            background-color: #238636;
+            color: white;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+        .glasses-container {
+            position: relative;
+            width: 720px;
+            height: 480px;
+            border: 12px solid #21262d;
+            border-radius: 28px;
+            background-color: #000;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(88, 166, 255, 0.2);
+        }
+        .video-stream {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .hud-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .glasses-frame-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+        }
+        .hud-status-bar {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #00ff66;
+            font-family: monospace;
+            font-size: 0.85rem;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 102, 0.3);
+        }
+        .hud-card {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 85%;
+            padding: 15px 20px;
+            border-radius: 12px;
+            background: rgba(13, 17, 23, 0.92);
+            border: 2px solid #58a6ff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+        .hud-card.unknown {
+            border-color: #da3633;
+            background: rgba(22, 10, 10, 0.92);
+        }
+        .hud-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .hud-badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: normal;
+        }
+        .hud-badge.known {
+            background-color: #238636;
+            color: #fff;
+        }
+        .hud-badge.unknown {
+            background-color: #da3633;
+            color: #fff;
+        }
+        .hud-details {
+            font-size: 0.9rem;
+            color: #c9d1d9;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #2ea043;
+        }
+        button.secondary {
+            background: #21262d;
+            border: 1px solid #30363d;
+        }
+        button.secondary:hover {
+            background: #30363d;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Ray-Ban Meta Glasses Context Assistant</h1>
+        <p class="subtitle">On-Device Opt-In Biometrics & Privacy-First Face Blurring</p>
+        <span class="privacy-badge">PRIVACY COMPLIANT: NO PUBLIC FACIAL RECOGNITION</span>
+    </header>
+
+    <div class="glasses-container">
+        <img id="hud-frame" class="video-stream" src="" alt="Glasses Camera Stream" />
+        <div class="hud-overlay">
+            <div class="glasses-frame-ring"></div>
+            <div class="hud-status-bar">
+                <span>👓 RAY-BAN META HUD</span>
+                <span id="privacy-mode">PRIVACY MODE: ENFORCED (AUTO-BLUR UNKNOWN)</span>
+                <span id="gallery-count">OPT-IN GALLERY: 5/50</span>
+            </div>
+            <div id="hud-card" class="hud-card">
+                <div class="hud-title">
+                    <span id="hud-name">Initializing Stream...</span>
+                    <span id="hud-type-badge" class="hud-badge known">OPT-IN MATCH</span>
+                </div>
+                <div id="hud-details" class="hud-details">Loading HUD context overlay...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="simulateKnownContact('daniel_seed')">Simulate Known Contact (Daniel)</button>
+        <button onclick="simulateKnownContact('sarah_seed')">Simulate Known Contact (Sarah)</button>
+        <button class="secondary" onclick="simulateUnknownPerson()">Simulate Unknown Person (Auto-Blurred)</button>
+    </div>
+
+    <script>
+        async function fetchFrame(seedId = null) {
+            try {
+                const res = await fetch('/api/v1/process-frame', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ seed_id: seedId })
+                });
+                const data = await res.json();
+
+                if (data.processed_frame_b64) {
+                    document.getElementById('hud-frame').src = 'data:image/jpeg;base64,' + data.processed_frame_b64;
+                }
+
+                if (data.hud_cards && data.hud_cards.length > 0) {
+                    const card = data.hud_cards[0];
+                    const cardElem = document.getElementById('hud-card');
+                    const badgeElem = document.getElementById('hud-type-badge');
+
+                    document.getElementById('hud-name').innerText = card.name;
+                    document.getElementById('hud-details').innerText = card.hud_text;
+
+                    if (card.is_known) {
+                        cardElem.className = 'hud-card';
+                        badgeElem.className = 'hud-badge known';
+                        badgeElem.innerText = `OPT-IN MATCH (${(card.similarity * 100).toFixed(0)}%)`;
+                    } else {
+                        cardElem.className = 'hud-card unknown';
+                        badgeElem.className = 'hud-badge unknown';
+                        badgeElem.innerText = 'UNKNOWN (BLURRED)';
+                    }
+                }
+            } catch (err) {
+                console.error("Frame processing error:", err);
+            }
+        }
+
+        function simulateKnownContact(seed) {
+            fetchFrame(seed);
+        }
+
+        function simulateUnknownPerson() {
+            fetchFrame('unknown_person_99');
+        }
+
+        // Initial fetch
+        simulateKnownContact('daniel_seed');
+    </script>
+</body>
+</html>
