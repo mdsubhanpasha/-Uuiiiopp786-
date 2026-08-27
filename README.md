@@ -6,17 +6,45 @@
 <p align="center"><strong>Autonomous C-Suite AI Operating System</strong><br>7 Agents. 1 Objective. Zero Downtime.</p>
 
 ## 🚀 What is PASHA-OS?
-CEO, CFO, CTO, CMO, COO, CHRO, Legal - 7 AI Agents
+CEO, CFO, CTO, CMO, COO, CHRO, Legal - 20-Agent Autonomous MNC Operating System.
 
-## 📊 Monitoring (NEW from PR #11)
-- **Metrics:** `/metrics` endpoint with prometheus-fastapi-instrumentator
-- **K8s:** `monitoring` namespace, ServiceMonitor, PodMonitor
-- **Grafana:** Golden Signals Dashboard
-- **Alerts:** HTTP 5xx, latency, crash loops
-- **Deploy:** `scripts/deploy-monitoring.sh`
+## 📊 Monitoring & Telemetry Architecture
+
+### 1. Prometheus & Metrics
+- **Metrics Endpoint:** `/metrics` endpoint with Prometheus FastAPI metrics (`pasha_os_requests_total`, `pasha_os_request_duration_seconds`)
+- **K8s Custom Resources:** `monitoring` namespace, ServiceMonitor, PodMonitor
+- **Deploy Script:** `scripts/deploy-monitoring.sh`
+
+### 2. Centralized Observability & PLG Stack (Promtail + Loki + Grafana)
+See [`pasha-os-plg-observability/`](./pasha-os-plg-observability/) for the full standalone documentation and runbooks.
+- **Structured JSON Telemetry:** Standardized log format outputting single-line JSON streams to `stdout` (`timestamp`, `level`, `logger_name`, `correlation_id`, `http_method`, `path`, `status_code`, `client_ip`, `latency_ms`, `message`).
+- **Distributed Tracing & Correlation ID:** `asgi-correlation-id` middleware injects and propagates `X-Correlation-ID` across HTTP requests and responses.
+- **Promtail Pipeline:** Custom parsing stages (`monitoring/promtail-config.yaml`) extract log labels (`level`, `http_method`, `status_code`) without high-cardinality bottlenecks.
+- **Loki Data Source Provisioning:** Auto-provisioned Loki data source (`monitoring/datasources/loki-datasource.yaml`) pointing to `http://loki.monitoring.svc.cluster.local:3100`.
+- **LogQL Grafana Dashboard:** Embedded LogQL streaming panel in `monitoring/dashboards/finagent-dashboard.json` for real-time error log correlation.
+- **Deployment Script:** `scripts/deploy-logging.sh`
+
+### 3. Operational Runbook & LogQL Queries
+- **Deploy Logging Pipeline:**
+  ```bash
+  ./scripts/deploy-logging.sh
+  ```
+- **Validation Commands:**
+  ```bash
+  # Verify Promtail and Loki pod status
+  kubectl get pods -n monitoring -l app=loki
+  kubectl get pods -n monitoring -l app=promtail
+
+  # Query correlation ID header
+  curl -i -H "X-Correlation-ID: test-123" http://localhost:8000/health
+  ```
+- **LogQL Debugging Query Snippets:**
+  - Query errors: `{job="kubernetes-pods"} | json | status_code >= 500 or level="ERROR"`
+  - Filter by Correlation ID: `{job="kubernetes-pods"} | json | correlation_id="YOUR-CORRELATION-ID"`
+  - Slow request latency (>500ms): `{job="kubernetes-pods"} | json | latency_ms > 500`
 
 ## 🛠️ Tech Stack
-Python | LangGraph | FastAPI | Streamlit | Docker | Prometheus | Grafana
+Python | LangGraph | FastAPI | Streamlit | Docker | Prometheus | Promtail | Loki | Grafana
 
 ## 📸 Demo
 ![Dashboard](assets/cover.png)
