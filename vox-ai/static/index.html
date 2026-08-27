@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOX-AI | Real-Time Voice AI Customer Support Agent</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .pulse-wave {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse 1.6s infinite cubic-bezier(0.66, 0, 0, 1);
+        }
+        @keyframes pulse {
+            to { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); }
+        }
+        .waveform-bar {
+            animation: soundWave 0.8s ease-in-out infinite alternate;
+        }
+        @keyframes soundWave {
+            0% { height: 8px; }
+            100% { height: 36px; }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-emerald-500 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-cyan-500/20">
+                <i class="fa-solid fa-headset"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">VOX-AI</h1>
+                <p class="text-xs text-slate-400 font-medium">Real-Time Voice AI Customer Support Agent (Bland AI / Vapi Architecture)</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2 bg-slate-800/80 border border-slate-700/60 rounded-lg px-3 py-1.5 text-xs">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-slate-300 font-semibold" id="system-status">System Operational</span>
+            </div>
+            <div class="bg-cyan-950/60 border border-cyan-800/60 text-cyan-300 rounded-lg px-3 py-1.5 text-xs font-semibold">
+                Target Latency: &lt;1.2s
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto w-full">
+
+        <!-- Left Column: Web Phone UI -->
+        <div class="lg:col-span-5 flex flex-col space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl flex flex-col items-center text-center relative overflow-hidden">
+                <div class="absolute top-4 right-4 text-xs font-mono text-slate-500" id="session-badge">Session: Idle</div>
+
+                <!-- Avatar & Status -->
+                <div class="relative my-6">
+                    <div id="avatar-container" class="w-28 h-28 rounded-full bg-slate-800 border-4 border-slate-700 flex items-center justify-center transition-all duration-300 shadow-xl">
+                        <i id="avatar-icon" class="fa-solid fa-robot text-4xl text-slate-400"></i>
+                    </div>
+                </div>
+
+                <h2 id="call-status-text" class="text-lg font-semibold text-slate-200">Ready to Start Call</h2>
+                <p id="call-subtext" class="text-xs text-slate-400 mt-1 max-w-xs">Simulate or stream real-time audio with STT Nova-2, GPT-4o, and ElevenLabs TTS</p>
+
+                <!-- Audio Wave Visualizer -->
+                <div id="visualizer-box" class="h-10 flex items-center justify-center space-x-1.5 my-4 opacity-30">
+                    <div class="w-1.5 bg-emerald-400 rounded-full waveform-bar" style="animation-delay: 0.1s"></div>
+                    <div class="w-1.5 bg-emerald-400 rounded-full waveform-bar" style="animation-delay: 0.3s"></div>
+                    <div class="w-1.5 bg-emerald-400 rounded-full waveform-bar" style="animation-delay: 0.2s"></div>
+                    <div class="w-1.5 bg-emerald-400 rounded-full waveform-bar" style="animation-delay: 0.4s"></div>
+                    <div class="w-1.5 bg-emerald-400 rounded-full waveform-bar" style="animation-delay: 0.15s"></div>
+                </div>
+
+                <!-- Call Control Buttons -->
+                <div class="flex items-center justify-center space-x-4 w-full mt-2">
+                    <button id="btn-start-call" onclick="startCall()" class="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition shadow-lg shadow-emerald-600/20 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-phone"></i>
+                        <span>Start Call</span>
+                    </button>
+
+                    <button id="btn-interrupt" onclick="sendInterrupt()" disabled class="py-3 px-4 rounded-xl bg-amber-600/40 hover:bg-amber-500 text-white font-semibold text-sm transition border border-amber-500/40 flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed">
+                        <i class="fa-solid fa-hand"></i>
+                        <span>Interrupt AI</span>
+                    </button>
+
+                    <button id="btn-end-call" onclick="endCall()" disabled class="py-3 px-4 rounded-xl bg-rose-600/40 hover:bg-rose-500 text-white font-semibold text-sm transition border border-rose-500/40 flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed">
+                        <i class="fa-solid fa-phone-slash"></i>
+                        <span>End</span>
+                    </button>
+                </div>
+
+                <!-- Interactive Speech Input Simulation -->
+                <div class="w-full mt-6 text-left border-t border-slate-800 pt-4">
+                    <label class="block text-xs font-semibold text-slate-400 mb-2">Simulate User Speech Input:</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="sim-speech-input" placeholder="Type user sentence (e.g. Check order ORD-1001)..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+                        <button onclick="sendSimulatedSpeech()" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold px-4 py-2 rounded-xl transition">
+                            Speak
+                        </button>
+                    </div>
+
+                    <!-- Preset Test Scenarios -->
+                    <div class="mt-4">
+                        <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Quick Test Scenarios:</div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="presetScenario('Check status of order ORD-1001')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition">
+                                📦 Check ORD-1001
+                            </button>
+                            <button onclick="presetScenario('Book a support appointment for Alex next Monday at 10 AM')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition">
+                                📅 Book Appointment
+                            </button>
+                            <button onclick="presetScenario('I am extremely angry! My order is delayed and this is ridiculous! Transfer me to a human manager right now!')" class="text-xs bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 px-3 py-1.5 rounded-lg border border-rose-800/60 transition">
+                                😡 Angry Customer (Auto-Escalate)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right Column: Real-Time Performance & Metrics Dashboard -->
+        <div class="lg:col-span-7 flex flex-col space-y-6">
+
+            <!-- Latency Benchmark Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                    <div class="text-[11px] font-semibold text-slate-400 uppercase">STT (Nova-2)</div>
+                    <div id="stt-latency-val" class="text-xl font-bold text-cyan-400 my-1">-- ms</div>
+                    <div class="text-[10px] text-slate-500">Target: &lt;200ms</div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                    <div class="text-[11px] font-semibold text-slate-400 uppercase">LLM (GPT-4o)</div>
+                    <div id="llm-latency-val" class="text-xl font-bold text-indigo-400 my-1">-- ms</div>
+                    <div class="text-[10px] text-slate-500">Target: &lt;400ms</div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                    <div class="text-[11px] font-semibold text-slate-400 uppercase">TTS (ElevenLabs)</div>
+                    <div id="tts-latency-val" class="text-xl font-bold text-emerald-400 my-1">-- ms</div>
+                    <div class="text-[10px] text-slate-500">Target: &lt;300ms</div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                    <div class="text-[11px] font-semibold text-slate-400 uppercase">End-to-End</div>
+                    <div id="total-latency-val" class="text-xl font-bold text-emerald-400 my-1">-- ms</div>
+                    <div class="text-[10px] text-slate-500">Target: &lt;1200ms</div>
+                </div>
+            </div>
+
+            <!-- Sentiment Analysis & Escalation Status -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center space-x-3">
+                    <div id="sentiment-icon-badge" class="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
+                        <i class="fa-solid fa-face-smile"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-semibold text-slate-400">Customer Sentiment</div>
+                        <div id="sentiment-text" class="text-sm font-bold text-slate-200">Neutral (0.0)</div>
+                    </div>
+                </div>
+
+                <div id="escalation-badge" class="bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 flex items-center space-x-2">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Status: Normal AI Support</span>
+                </div>
+            </div>
+
+            <!-- Live Transcript Feed -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex-1 flex flex-col min-h-[220px]">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+                    <span><i class="fa-solid fa-comments text-cyan-400 mr-2"></i>Live Call Transcript</span>
+                    <span id="turn-counter" class="text-[10px] font-mono text-slate-500">Turns: 0</span>
+                </h3>
+
+                <div id="transcript-container" class="flex-1 space-y-3 overflow-y-auto max-h-[240px] pr-2 text-xs">
+                    <div class="text-slate-500 italic text-center py-6">No call history yet. Click "Start Call" to begin.</div>
+                </div>
+            </div>
+
+            <!-- Function Calls Execution Log -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                    <i class="fa-solid fa-code text-indigo-400 mr-2"></i>Executed Function Calls (SQLite / Tools)
+                </h3>
+
+                <div id="function-log-container" class="space-y-2 text-xs max-h-[160px] overflow-y-auto font-mono">
+                    <div class="text-slate-500 italic">No tool execution recorded yet.</div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Client Application JS -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
