@@ -1,0 +1,8 @@
+{
+  "project": "PASHA-NEURO-RAG",
+  "author": "Mohammad Subhan Pasha",
+  "mean_faithfulness": 0.95,
+  "mean_answer_relevancy": 0.9,
+  "mean_context_recall": 0.91,
+  "status": "PASSED"
+}
