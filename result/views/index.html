@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Voting Results</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; }
+    .results { display: flex; justify-content: center; margin-top: 20px; }
+    .card { background: white; padding: 20px; margin: 10px; border-radius: 8px; width: 150px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .count { font-size: 32px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Voting Results</h1>
+  <div class="results">
+    <div class="card">
+      <h3>Option A</h3>
+      <div id="count-a" class="count">0</div>
+    </div>
+    <div class="card">
+      <h3>Option B</h3>
+      <div id="count-b" class="count">0</div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    socket.on('scores', (scores) => {
+      document.getElementById('count-a').innerText = scores.a || 0;
+      document.getElementById('count-b').innerText = scores.b || 0;
+    });
+  </script>
+</body>
+</html>
