@@ -1,0 +1,18 @@
+{
+  "id": 8,
+  "topic": "Reciprocal Rank Fusion Reranking",
+  "angle": "Technical",
+  "variant_type": "Technical deep-dive",
+  "hook": "Stop relying on cosine similarity scores alone to rank RAG context.",
+  "problem": "Score distribution varies wildly across different embedding spaces, making hard thresholding fail.",
+  "insight": "Reciprocal Rank Fusion (RRF) normalizes rank positions across sparse BM25 and dense Qdrant vector streams cleanly.",
+  "cta": "Have you implemented RRF reranking in your production search pipelines?",
+  "full_text": "Stop relying on cosine similarity scores alone to rank RAG context.\n\nScore distribution varies wildly across different embedding spaces, making hard thresholding fail.\n\nReciprocal Rank Fusion (RRF) normalizes rank positions across sparse BM25 and dense Qdrant vector streams cleanly.\n\nIn our benchmark evaluation, RRF reduced retrieval error rates from 18.4% to 2.1%.\n\nHave you implemented RRF reranking in your production search pipelines?\n\n#RAG #InformationRetrieval #Qdrant #MachineLearning #Search",
+  "hashtags": "#RAG #InformationRetrieval #Qdrant #MachineLearning #Search",
+  "image_url": "/outputs/images/sample_8.png",
+  "virality_score": 87,
+  "predicted_views": "6k-10k views",
+  "source_urls": [
+    "https://arxiv.org/abs/2308.00005"
+  ]
+}

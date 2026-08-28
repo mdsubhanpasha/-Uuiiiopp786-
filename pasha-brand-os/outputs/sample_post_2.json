@@ -1,0 +1,18 @@
+{
+  "id": 2,
+  "topic": "Sub-300ms Voice AI Architectures",
+  "angle": "How-To",
+  "variant_type": "Technical deep-dive",
+  "hook": "Sub-300ms Voice AI latency is no longer a luxury\u2014it is the baseline requirement.",
+  "problem": "Standard REST LLM calls take 1.8 seconds. Users abandon voice calls if response pause exceeds 500ms.",
+  "insight": "Combining Deepgram Nova-2 streaming STT with Groq Llama-3.3-70b speculative decoding achieves sub-220ms glass-to-glass turn latency.",
+  "cta": "What bottleneck is currently slowing down your conversational voice stack?",
+  "full_text": "Sub-300ms Voice AI latency is no longer a luxury\u2014it is the baseline requirement.\n\nStandard REST LLM calls take 1.8 seconds. Users abandon voice calls if response pause exceeds 500ms.\n\nCombining Deepgram Nova-2 streaming STT with Groq Llama-3.3-70b speculative decoding achieves sub-220ms glass-to-glass turn latency.\n\nHere is our production setup:\n1. Deepgram WebSocket STT (<100ms)\n2. Groq Llama-3.3-70b (<70ms)\n3. ElevenLabs TTS (<80ms)\n\nWhat bottleneck is currently slowing down your conversational voice stack?\n\n#VoiceAI #Deepgram #Groq #ElevenLabs #AIInfrastructure",
+  "hashtags": "#VoiceAI #Deepgram #Groq #ElevenLabs #AIInfrastructure",
+  "image_url": "/outputs/images/sample_2.png",
+  "virality_score": 95,
+  "predicted_views": "12k-18k views",
+  "source_urls": [
+    "https://venturebeat.com/ai/voice-ai-latency"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": 4,
+  "topic": "Style Cloning Vector Search",
+  "angle": "Story",
+  "variant_type": "Story format",
+  "hook": "3 months ago, my executive content sounded like generic AI slop.",
+  "problem": "Off-the-shelf prompts generated robotic posts that lost 70% of organic reader engagement.",
+  "insight": "We built a vector style cloner using OpenAI text-embedding-3-small and Qdrant. Now posts match my exact cadence and vocabulary.",
+  "cta": "How are you preserving authentic executive voice when using LLMs for branding?",
+  "full_text": "3 months ago, my executive content sounded like generic AI slop.\n\nOff-the-shelf prompts generated robotic posts that lost 70% of organic reader engagement.\n\nWe built a vector style cloner using OpenAI text-embedding-3-small and Qdrant. Now posts match my exact cadence and vocabulary.\n\nResult: Virality scores jumped from 62 to 89, saving 2 hours every day.\n\nHow are you preserving authentic executive voice when using LLMs for branding?\n\n#PersonalBranding #StyleCloning #Qdrant #AI #ExecutivePresence",
+  "hashtags": "#PersonalBranding #StyleCloning #Qdrant #AI #ExecutivePresence",
+  "image_url": "/outputs/images/sample_4.png",
+  "virality_score": 89,
+  "predicted_views": "8k-12k views",
+  "source_urls": [
+    "https://techcrunch.com/ai/executive-branding"
+  ]
+}

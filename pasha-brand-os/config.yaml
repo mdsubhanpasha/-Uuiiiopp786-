@@ -1,0 +1,35 @@
+influencers:
+  - "Andrew Ng"
+  - "Sam Altman"
+  - "Yann LeCun"
+  - "Andrej Karpathy"
+  - "Ethan Mollick"
+  - "Allie K. Miller"
+  - "Linus Ekenstam"
+  - "Matt Wolfe"
+  - "Rowan Cheung"
+  - "Subhan Pasha"
+
+target_hashtags:
+  - "#VoiceAI"
+  - "#RAG"
+  - "#LangGraph"
+  - "#CrewAI"
+  - "#MultiAgent"
+  - "#GenerativeAI"
+
+posting_schedule:
+  time: "09:30"
+  timezone: "Asia/Kolkata"
+
+limits:
+  max_posts_per_day: 1
+  max_auto_comments_per_day: 50
+  news_fetch_interval_hours: 6
+  analytics_scrape_delay_hours: 6
+
+models:
+  default_llm: "gpt-4o"
+  embedding_model: "text-embedding-3-small"
+  image_model: "dall-e-3"
+  comment_llm: "llama-3.3-70b-versatile"
