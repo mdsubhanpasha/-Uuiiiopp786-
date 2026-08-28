@@ -1,0 +1,18 @@
+{
+  "id": 10,
+  "topic": "Prometheus & Grafana Observability for AI OS",
+  "angle": "How-To",
+  "variant_type": "Technical deep-dive",
+  "hook": "If you cannot monitor your LLM latency and virality score metrics, you are operating in the dark.",
+  "problem": "Silent failures in background queue workers go unnoticed until user engagement collapses.",
+  "insight": "Exposing Prometheus metrics on /metrics via prometheus-fastapi-instrumentator provides real-time telemetry into request latency and queue depth.",
+  "cta": "How are you monitoring microservices health in your AI infrastructure?",
+  "full_text": "If you cannot monitor your LLM latency and virality score metrics, you are operating in the dark.\n\nSilent failures in background queue workers go unnoticed until user engagement collapses.\n\nExposing Prometheus metrics on /metrics via prometheus-fastapi-instrumentator provides real-time telemetry into request latency and queue depth.\n\nZero mystery. Total operational visibility.\n\nHow are you monitoring microservices health in your AI infrastructure?\n\n#Observability #Prometheus #FastAPI #DevOps #Microservices",
+  "hashtags": "#Observability #Prometheus #FastAPI #DevOps #Microservices",
+  "image_url": "/outputs/images/sample_10.png",
+  "virality_score": 91,
+  "predicted_views": "9k-14k views",
+  "source_urls": [
+    "https://prometheus.io/docs"
+  ]
+}

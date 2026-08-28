@@ -1,0 +1,18 @@
+{
+  "id": 7,
+  "topic": "DALL-E 3 Visual Carousel Design",
+  "angle": "How-To",
+  "variant_type": "Technical deep-dive",
+  "hook": "Text-only posts get 60% fewer impressions than posts with minimalist visual carousels.",
+  "problem": "Creating clean engineering visual assets takes 45 minutes per post in Figma.",
+  "insight": "Automating DALL-E 3 prompt engineering within Node 3 of LangGraph generates crisp 1024x1024 visual diagrams in 6 seconds.",
+  "cta": "Do you prefer single Minimalist visual graphics or full 5-slide carousels on LinkedIn?",
+  "full_text": "Text-only posts get 60% fewer impressions than posts with minimalist visual carousels.\n\nCreating clean engineering visual assets takes 45 minutes per post in Figma.\n\nAutomating DALL-E 3 prompt engineering within Node 3 of LangGraph generates crisp 1024x1024 visual diagrams in 6 seconds.\n\nHigh-contrast dark tech aesthetics boost dwell time by 3.2x.\n\nDo you prefer single Minimalist visual graphics or full 5-slide carousels on LinkedIn?\n\n#DALLE3 #DesignAutomation #GenerativeAI #LinkedInTips #VisualDesign",
+  "hashtags": "#DALLE3 #DesignAutomation #GenerativeAI #LinkedInTips #VisualDesign",
+  "image_url": "/outputs/images/sample_7.png",
+  "virality_score": 84,
+  "predicted_views": "5k-8k views",
+  "source_urls": [
+    "https://openai.com/dall-e-3"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": 9,
+  "topic": "Rate Limiting & Queue Orchestration",
+  "angle": "Story",
+  "variant_type": "Story format",
+  "hook": "Publishing 3 times a day on LinkedIn will trigger shadowbans.",
+  "problem": "Over-posting degrades algorithmic reach per post by up to 55%.",
+  "insight": "We configured APScheduler to enforce a strict 1 post/day limit at peak engagement time (9:30 AM IST).",
+  "cta": "What posting frequency has yielded the best organic engagement for your account?",
+  "full_text": "Publishing 3 times a day on LinkedIn will trigger shadowbans.\n\nOver-posting degrades algorithmic reach per post by up to 55%.\n\nWe configured APScheduler to enforce a strict 1 post/day limit at peak engagement time (9:30 AM IST).\n\nQuality and consistent pacing outperform raw volume every single time.\n\nWhat posting frequency has yielded the best organic engagement for your account?\n\n#LinkedInAlgorithm #ContentStrategy #APScheduler #Growth #Automation",
+  "hashtags": "#LinkedInAlgorithm #ContentStrategy #APScheduler #Growth #Automation",
+  "image_url": "/outputs/images/sample_9.png",
+  "virality_score": 83,
+  "predicted_views": "5k-7k views",
+  "source_urls": [
+    "https://linkedin.com/help"
+  ]
+}

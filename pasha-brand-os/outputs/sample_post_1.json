@@ -1,0 +1,18 @@
+{
+  "id": 1,
+  "topic": "Autonomous Multi-Agent Systems in Production",
+  "angle": "Contrarian",
+  "variant_type": "Contrarian hot-take",
+  "hook": "Most engineering teams are building AI agents completely wrong.",
+  "problem": "Connecting LLMs directly to APIs without deterministic state machines causes 42% loop degradation after 3 turns.",
+  "insight": "Deploying stateful LangGraph DAG architectures with memory checkpoints drops latency to sub-300ms while hitting 99.4% task completion.",
+  "cta": "How is your engineering team handling agent loop state persistence in production?",
+  "full_text": "Most engineering teams are building AI agents completely wrong.\n\nConnecting LLMs directly to APIs without deterministic state machines causes 42% loop degradation after 3 turns.\n\nDeploying stateful LangGraph DAG architectures with memory checkpoints drops latency to sub-300ms while hitting 99.4% task completion.\n\nStop shipping naive prompt wrappers. Build resilient agent loops.\n\nHow is your engineering team handling agent loop state persistence in production?\n\n#LangGraph #MultiAgent #VoiceAI #RAG #EnterpriseAI",
+  "hashtags": "#LangGraph #MultiAgent #VoiceAI #RAG #EnterpriseAI",
+  "image_url": "/outputs/images/sample_1.png",
+  "virality_score": 92,
+  "predicted_views": "10k-15k views",
+  "source_urls": [
+    "https://arxiv.org/abs/2401.00001"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": 5,
+  "topic": "Human-in-the-Loop Telegram Approval Workflows",
+  "angle": "How-To",
+  "variant_type": "Technical deep-dive",
+  "hook": "Fully autonomous social publishing is a dangerous recipe for brand reputational risk.",
+  "problem": "Unfiltered LLM outputs can introduce hallucinations or off-brand tone before anyone notices.",
+  "insight": "Integrating interactive Telegram Inline Keyboard buttons creates a 5-second human approval checkpoint right from your phone.",
+  "cta": "Do you allow 100% automated AI posting, or do you require human-in-the-loop validation?",
+  "full_text": "Fully autonomous social publishing is a dangerous recipe for brand reputational risk.\n\nUnfiltered LLM outputs can introduce hallucinations or off-brand tone before anyone notices.\n\nIntegrating interactive Telegram Inline Keyboard buttons creates a 5-second human approval checkpoint right from your phone.\n\nOne tap on \u2705 Approve & Schedule queue sends posts straight to LinkedIn API v2.\n\nDo you allow 100% automated AI posting, or do you require human-in-the-loop validation?\n\n#HumanInTheLoop #TelegramBot #LangGraph #Productivity #MNC",
+  "hashtags": "#HumanInTheLoop #TelegramBot #LangGraph #Productivity #MNC",
+  "image_url": "/outputs/images/sample_5.png",
+  "virality_score": 86,
+  "predicted_views": "6k-9k views",
+  "source_urls": [
+    "https://telegram.org/blog/bot-v20"
+  ]
+}

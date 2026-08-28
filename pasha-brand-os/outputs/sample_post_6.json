@@ -1,0 +1,18 @@
+{
+  "id": 6,
+  "topic": "High-Signal Auto-Engagement Engine",
+  "angle": "Contrarian",
+  "variant_type": "Contrarian hot-take",
+  "hook": "Generic LinkedIn comments like Great share! are killing your profile reach.",
+  "problem": "Algorithm filters suppress accounts posting repetitive low-effort automated comments.",
+  "insight": "Deploying Groq Llama-3.3-70b with strictly constrained prompts generates sub-500ms, 2-line technical comments that spark real debate.",
+  "cta": "What comment strategy brings the highest signal-to-noise ratio for your network?",
+  "full_text": "Generic LinkedIn comments like Great share! are killing your profile reach.\n\nAlgorithm filters suppress accounts posting repetitive low-effort automated comments.\n\nDeploying Groq Llama-3.3-70b with strictly constrained prompts generates sub-500ms, 2-line technical comments that spark real debate.\n\nLimit engagement to 50 targeted posts per day to build high-signal authority without platform rate limits.\n\nWhat comment strategy brings the highest signal-to-noise ratio for your network?\n\n#Groq #Llama3 #GrowthHacking #LinkedInStrategy #AI",
+  "hashtags": "#Groq #Llama3 #GrowthHacking #LinkedInStrategy #AI",
+  "image_url": "/outputs/images/sample_6.png",
+  "virality_score": 90,
+  "predicted_views": "9k-13k views",
+  "source_urls": [
+    "https://groq.com/benchmarks"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": 3,
+  "topic": "Self-Correcting RAG Systems",
+  "angle": "Technical",
+  "variant_type": "Technical deep-dive",
+  "hook": "Vector search alone fails on 32% of enterprise technical queries.",
+  "problem": "Pure cosine similarity on embeddings misses semantic keyword precision in domain documentation.",
+  "insight": "Qdrant hybrid BM25 + dense retrieval with Reciprocal Rank Fusion boosts precision from 68% to 94.8%.",
+  "cta": "Are you relying purely on embeddings or using hybrid dense retrieval?",
+  "full_text": "Vector search alone fails on 32% of enterprise technical queries.\n\nPure cosine similarity on embeddings misses semantic keyword precision in domain documentation.\n\nQdrant hybrid BM25 + dense retrieval with Reciprocal Rank Fusion boosts precision from 68% to 94.8%.\n\nPairing this with a DeBERTa-v3 NLI hallucination guard guarantees zero false answers in production.\n\nAre you relying purely on embeddings or using hybrid dense retrieval?\n\n#RAG #Qdrant #VectorSearch #NLP #GenerativeAI",
+  "hashtags": "#RAG #Qdrant #VectorSearch #NLP #GenerativeAI",
+  "image_url": "/outputs/images/sample_3.png",
+  "virality_score": 88,
+  "predicted_views": "7k-11k views",
+  "source_urls": [
+    "https://arxiv.org/abs/2310.00002"
+  ]
+}
