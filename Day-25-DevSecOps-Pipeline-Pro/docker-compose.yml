@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Jenkins Automation Server
+  # ============================================================================
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    container_name: devsecops-jenkins
+    privileged: true
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    networks:
+      - devsecops-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ============================================================================
+  # SonarQube Code Quality & Security Platform
+  # ============================================================================
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: devsecops-sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - devsecops-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/api/system/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ============================================================================
+  # Target Flask Application (Local Environment Demo)
+  # ============================================================================
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: devsecops-flask-app
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - FLASK_ENV=development
+    networks:
+      - devsecops-net
+    restart: always
+
+networks:
+  devsecops-net:
+    driver: bridge
+
+volumes:
+  jenkins_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:

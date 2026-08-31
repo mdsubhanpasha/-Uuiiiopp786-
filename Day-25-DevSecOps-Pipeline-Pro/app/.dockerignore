@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+Jenkinsfile
+sonar-project.properties
+README.md

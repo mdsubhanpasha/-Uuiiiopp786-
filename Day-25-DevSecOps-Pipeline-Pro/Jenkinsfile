@@ -1,0 +1,169 @@
+// ==============================================================================
+// DevSecOps Declarative Pipeline - Day 25 Professional Project
+// ==============================================================================
+// DevSecOps Philosophy: Shift-Left Security
+// Integrating security checks early into the CI/CD pipeline ensures automated code quality analysis,
+// vulnerability management, and container security compliance prior to deployment.
+// ==============================================================================
+
+pipeline {
+    agent any
+
+    environment {
+        // Application & Repository Meta
+        APP_NAME        = "devsecops-pipeline-pro"
+        IMAGE_TAG       = "${BUILD_NUMBER}"
+
+        // AWS & ECR Configuration (Override via Jenkins Credentials / Environment)
+        AWS_REGION      = env.AWS_REGION ?: "us-east-1"
+        AWS_ACCOUNT_ID  = env.AWS_ACCOUNT_ID ?: "123456789012"
+        ECR_URL         = env.ECR_URL ?: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        FULL_IMAGE_NAME = "${ECR_URL}/${APP_NAME}:${IMAGE_TAG}"
+        LATEST_IMAGE    = "${ECR_URL}/${APP_NAME}:latest"
+
+        // SonarQube Scanner Tool Name configured in Jenkins Global Tool Configuration
+        SONAR_SCANNER_HOME = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+        timeout(time: 1, unit: 'HOURS')
+        timestamps()
+    }
+
+    stages {
+        // ======================================================================
+        // Stage 1: Checkout Source Code
+        // ======================================================================
+        // DevSecOps Note: Secure Source Control Management
+        // Pulling code from trusted Git repository branches ensuring auditability and traceability.
+        stage('Checkout from GitHub') {
+            steps {
+                echo "==> [Stage 1/6] Checking out source code from GitHub repository..."
+                checkout scm
+                script {
+                    echo "Successfully checked out git commit: ${env.GIT_COMMIT ?: 'Local Workspace'}"
+                }
+            }
+        }
+
+        // ======================================================================
+        // Stage 2: SonarQube Code Quality Analysis
+        // ======================================================================
+        // DevSecOps Note: Static Application Security Testing (SAST) & Code Quality
+        // Analyzes source code for bugs, code smells, and security vulnerabilities before compilation.
+        stage('SonarQube Code Quality Analysis') {
+            steps {
+                echo "==> [Stage 2/6] Executing SonarQube Code Quality & Security Scan..."
+                script {
+                    // Execute SonarScanner using sonar-project.properties file
+                    withSonarQubeEnv('SonarQubeServer') {
+                        sh """
+                            ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
+                              -Dsonar.projectKey=${APP_NAME} \
+                              -Dsonar.sources=app \
+                              -Dsonar.host.url=${env.SONAR_HOST_URL ?: 'http://sonarqube:9000'}
+                        """
+                    }
+                }
+            }
+        }
+
+        // ======================================================================
+        // Stage 3: Build Docker Image
+        // ======================================================================
+        // DevSecOps Note: Containerization & Immutable Artifacts
+        // Builds a lightweight multi-stage Docker image operating with a non-root user for principle of least privilege.
+        stage('Build Docker Image') {
+            steps {
+                echo "==> [Stage 3/6] Building Docker Container Image..."
+                script {
+                    dir('app') {
+                        sh "docker build -t ${APP_NAME}:${IMAGE_TAG} -t ${FULL_IMAGE_NAME} -t ${LATEST_IMAGE} ."
+                    }
+                    echo "Docker image ${FULL_IMAGE_NAME} built successfully."
+                }
+            }
+        }
+
+        // ======================================================================
+        // Stage 4: Trivy Vulnerability Scan
+        // ======================================================================
+        // DevSecOps Note: Container Image Security Scanning
+        // Scans OS packages and application dependencies within container image for vulnerabilities (CVEs).
+        // Fails the pipeline immediately if any HIGH or CRITICAL severity vulnerabilities are detected.
+        stage('Trivy Vulnerability Scan') {
+            steps {
+                echo "==> [Stage 4/6] Running Trivy Security Scan on Docker Image..."
+                script {
+                    // Generate Trivy scan report table and enforce security gate (fail on HIGH/CRITICAL)
+                    sh """
+                        echo "--- Trivy Scan Summary ---"
+                        trivy image --severity HIGH,CRITICAL --no-progress ${FULL_IMAGE_NAME} || true
+
+                        echo "--- Enforcing Security Gate (Failing pipeline if HIGH/CRITICAL found) ---"
+                        trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress ${FULL_IMAGE_NAME}
+                    """
+                }
+            }
+        }
+
+        // ======================================================================
+        // Stage 5: Push to AWS ECR
+        // ======================================================================
+        // DevSecOps Note: Secure Artifact Storage in AWS Elastic Container Registry
+        // Authenticates securely with AWS IAM credentials and pushes verified container images to ECR repository.
+        stage('Push to AWS ECR') {
+            steps {
+                echo "==> [Stage 5/6] Authenticating and Pushing Container Image to AWS ECR..."
+                script {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-ecr-credentials']]) {
+                        sh """
+                            echo "Authenticating to AWS ECR in region ${AWS_REGION}..."
+                            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_URL}
+
+                            echo "Pushing Docker image ${FULL_IMAGE_NAME}..."
+                            docker push ${FULL_IMAGE_NAME}
+
+                            echo "Pushing latest tag ${LATEST_IMAGE}..."
+                            docker push ${LATEST_IMAGE}
+                        """
+                    }
+                }
+            }
+        }
+
+        // ======================================================================
+        // Stage 6: Cleanup
+        // ======================================================================
+        // DevSecOps Note: Infrastructure Hygiene & Disk Space Management
+        // Cleans up local Docker images and build artifacts to prevent disk exhaustion and prevent artifact leakage.
+        stage('Cleanup') {
+            steps {
+                echo "==> [Stage 6/6] Cleaning up workspace and local Docker images..."
+                script {
+                    sh """
+                        docker rmi ${APP_NAME}:${IMAGE_TAG} ${FULL_IMAGE_NAME} ${LATEST_IMAGE} || true
+                        docker system prune -f || true
+                    """
+                }
+            }
+        }
+    }
+
+    // ==========================================================================
+    // Post-Pipeline Notifications & Maintenance
+    // ==========================================================================
+    post {
+        always {
+            echo "DevSecOps Pipeline run complete."
+        }
+        success {
+            echo "SUCCESS: Image ${FULL_IMAGE_NAME} passed all security gates and was successfully pushed to AWS ECR!"
+        }
+        failure {
+            echo "FAILURE: Pipeline failed security check, code quality gate, or build stage. Please review build logs!"
+        }
+    }
+}
