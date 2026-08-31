@@ -1,0 +1,40 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: pasha-x-ebpf-governance
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: pasha-x
+    app.kubernetes.io/component: ebpf-tracing
+spec:
+  kprobes:
+    - call: "sys_execve"
+      syscall: true
+      args:
+        - index: 0
+          type: "string" # binary path
+        - index: 1
+          type: "char_buf" # command arguments
+      selectors:
+        - matchNamespaces:
+            - "default"
+            - "prod"
+            - "staging"
+          matchActions:
+            - action: Post
+              rateLimit: "100/m"
+    - call: "sys_connect"
+      syscall: true
+      args:
+        - index: 0
+          type: "int"
+        - index: 1
+          type: "sockaddr"
+      selectors:
+        - matchNamespaces:
+            - "default"
+            - "prod"
+            - "staging"
+          matchActions:
+            - action: Post
+              rateLimit: "200/m"

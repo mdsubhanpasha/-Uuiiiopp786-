@@ -1,105 +1,114 @@
 <p align="center">
-  <img src="assets/cover.png" alt="PASHA-OS Banner" width="100%">
+  <img src="assets/cover.png" alt="PASHA-X Governance Plane Banner" width="100%">
 </p>
 
-<h1 align="center">PASHA-OS & Kubernetes Voting Microservices App</h1>
-<p align="center"><strong>Autonomous C-Suite AI Operating System & Microservices Voting Infrastructure</strong><br>7 Agents. 1 Objective. Zero Downtime.</p>
+<h1 align="center">PASHA-X: Zero-Trust AI Governance Plane</h1>
+<p align="center"><strong>A Confidential AIOps Platform for Enterprise Kubernetes Clusters</strong><br>Zero-Footprint eBPF Probes · IsolationForest + RAG AI-Brain · AWS Nitro Enclave Attestation · Argo Rollouts</p>
 
 ---
 
-## 🚀 What is PASHA-OS?
-CEO, CFO, CTO, CMO, COO, CHRO, Legal - 7 AI Agents
+## 🌟 Executive Overview
+**PASHA-X** is an enterprise-grade, zero-footprint, AI-enabled DevSecOps governance plane designed for high-security Kubernetes environments. Unlike legacy security solutions that rely on disk-heavy sidecar file logs or vulnerable daemon agents, PASHA-X captures system calls directly in the Linux kernel using **eBPF (Cilium Tetragon)**, stream-evaluates threats in memory using **IsolationForest ML** and **Qdrant RAG + Ollama Llama 3.1**, and executes cryptographically verified remediation within an **AWS Nitro Enclave**.
 
 ---
 
-## 🗳️ Kubernetes Voting Microservices Application (GitOps Ready)
+## 🏗️ Architecture & Zero-Trust Sequence Flow
 
-Production-ready microservices voting application built for Kubernetes Kind cluster with GitOps auto-sync via ArgoCD.
+```mermaid
+sequenceDiagram
+    autonumber
+    participant K as Linux Kernel / Pods
+    participant E as eBPF Collector (Go + Tetragon)
+    participant B as AI-Brain (FastAPI + RAG + Ollama)
+    participant N as Enclave-Remediator (Nitro + OPA)
+    participant A as Argo Rollout / K8s API
+    participant KMS as KMS Audit Vault
 
-### Architecture Components:
-- **Vote app (Python Flask):** Port `5000` (NodePort `31000`)
-- **Redis queue:** In-memory queue storing incoming votes
-- **Worker (.NET 8):** Background worker processing queue and persisting votes to Postgres
-- **Postgres DB:** Relational database storing votes result state
-- **Result app (Node.js):** Real-time web result dashboard on port `5001` (NodePort `31001`)
-
----
-
-## 🛠️ Deployment Instructions
-
-### 1. Create Kind Cluster
-Create a 3-node cluster (1 control-plane, 2 worker nodes) mapping host ports `5000` and `5001`:
-
-```bash
-kind create cluster --config kind-config.yaml --name voting-cluster
-```
-
-### 2. Build & Load Container Images
-Build the application container images and load them directly into your Kind cluster:
-
-```bash
-docker build -t vote:latest ./vote
-docker build -t result:latest ./result
-docker build -t worker:latest ./worker
-
-kind load docker-image vote:latest --name voting-cluster
-kind load docker-image result:latest --name voting-cluster
-kind load docker-image worker:latest --name voting-cluster
-```
-
-### 3. Deploy via `kubectl`
-Apply all Kubernetes manifests directly to the cluster:
-
-```bash
-kubectl apply -f k8s/
-```
-
-Verify all pods and services:
-
-```bash
-kubectl get pods -w
-kubectl get svc
-```
-
-Access the applications:
-- **Vote App:** [http://localhost:5000](http://localhost:5000)
-- **Result App:** [http://localhost:5001](http://localhost:5001)
-
----
-
-## 🔄 GitOps with ArgoCD Setup
-
-### 1. Install ArgoCD
-Install ArgoCD onto the cluster:
-
-```bash
-kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-```
-
-### 2. Apply ArgoCD Application Manifest
-Deploy the ArgoCD Application resource watching your repository with automated sync enabled:
-
-```bash
-kubectl apply -f argocd/application.yaml
-```
-
-Check ArgoCD application sync status:
-
-```bash
-kubectl get application -n argocd
+    K->>E: Syscall Event (exec / connect) [Zero-Disk Log]
+    E->>B: Stream OTel Telemetry over mTLS
+    B->>B: IsolationForest Anomaly Score Calculation
+    B->>B: Query Qdrant RAG Security Knowledge Base
+    B->>B: Generate Explanation via Ollama Llama 3.1
+    B->>N: Remediate Request (Event ID + Anomaly Score)
+    N->>N: Verify AWS Nitro Enclave Attestation Document
+    N->>N: Evaluate OPA Governance Policy Rules
+    N->>A: Patch K8s Argo Rollout Annotation (Trigger Restart)
+    N->>KMS: Encrypt Audit Log with AES KMS Key
 ```
 
 ---
 
-## 📊 Monitoring (NEW from PR #11)
-- **Metrics:** `/metrics` endpoint with prometheus-fastapi-instrumentator
-- **K8s:** `monitoring` namespace, ServiceMonitor, PodMonitor
-- **Grafana:** Golden Signals Dashboard
-- **Alerts:** HTTP 5xx, latency, crash loops
-- **Deploy:** `scripts/deploy-monitoring.sh`
+## 🛡️ Why No Footprint = High Security
 
-## 🛠️ Tech Stack
-Python | Node.js | .NET | PostgreSQL | Redis | Kubernetes | Kind | ArgoCD | LangGraph | FastAPI | Streamlit | Docker | Prometheus | Grafana
+1. **Zero Attack Surface on Host Disk:** Traditional logging solutions write plaintext security logs to host disk paths like `/var/log/containers/`. Adversaries with container escape or root privilege can modify, wipe, or tamper with host log files to clear their tracks. PASHA-X streams eBPF kernel events directly via RAM (`/dev/shm`) over mTLS, leaving **0 bytes** on the host file system.
+2. **Confidential Container Execution (Kata Containers):** Microservices execute inside hardware-isolated Kata Confidential Containers, preventing host root processes from inspecting container memory state.
+3. **Hardware Enclave Attestation:** Decisions are verified in an isolated AWS Nitro Enclave, guaranteeing code integrity via cryptographic PCR0/PCR1/PCR2 measurements before any Kubernetes mutation is permitted.
+4. **Immutable Cryptographic Auditability:** Every governance action is logged and encrypted with KMS AES keys, producing SHA-256 integrity hashes for compliance.
 
-Built by @mdsubhanpasha
+---
+
+## 📁 Repository Structure
+
+```
+.
+├── src/
+│   ├── ebpf-collector/          # Go + eBPF Cilium Tetragon collector (Zero-Disk OTel transport)
+│   ├── ai-brain/                # Python FastAPI + IsolationForest + Qdrant RAG + Ollama Llama 3.1
+│   ├── enclave-remediator/      # Python AWS Nitro Enclave attestation + OPA policy + KMS logger
+│   └── signer/                  # Syft SPDX SBOM generator & Cosign Keyless Image Signer
+├── k8s/
+│   ├── tetragon-policy.yaml     # Tetragon TracingPolicy for sys_execve and sys_connect
+│   ├── kyverno-policies/        # Kyverno policies (deny-privileged, require-signed-images)
+│   ├── argo-rollout.yaml        # Argo Rollout canary deployment manifest
+│   └── confidential-deployment.yaml # Kata Containers runtimeClass deployment
+├── .github/workflows/
+│   └── slsa-secure-pipeline.yaml # Multi-stage non-root build, Syft, Trivy, Cosign SLSA pipeline
+├── scripts/
+│   └── zero-footprint-install.sh # Zero-footprint installer running entirely in /dev/shm
+└── README.md
+```
+
+---
+
+## 🚀 Quick Start & Live Demonstration
+
+### 1. Execute Zero-Footprint Installation & Demo
+Run the installation script in shared memory:
+
+```bash
+chmod +x scripts/zero-footprint-install.sh
+./scripts/zero-footprint-install.sh
+```
+
+### 2. Run Test Suites
+Validate all Go and Python microservices:
+
+```bash
+# Test eBPF Collector (Go)
+(cd src/ebpf-collector && go test -v ./...)
+
+# Test AI-Brain (Python)
+PYTHONPATH=src/ai-brain python3 -m pytest src/ai-brain/tests/ -v
+
+# Test Enclave Remediator (Python)
+PYTHONPATH=src/enclave-remediator python3 -m pytest src/enclave-remediator/tests/ -v
+```
+
+### 3. Generate SBOM and Cosign Signature
+```bash
+chmod +x src/signer/generate_sbom_and_sign.sh
+./src/signer/generate_sbom_and_sign.sh pasha-x/ai-brain:latest /tmp/sbom-outputs
+```
+
+---
+
+## 📊 Microservices Prometheus Metrics Standard
+All microservices expose `/metrics` endpoints:
+- `ebpf-collector`: Port `8080/metrics` (`ebpf_events_collected_total`, `ebpf_events_exported_total`)
+- `ai-brain`: Port `8000/metrics` (`ai_brain_ingested_events_total`, `ai_brain_anomalies_detected_total`)
+- `enclave-remediator`: Port `8001/metrics` (`remediator_actions_total`, `remediator_opa_verifications_total`)
+
+---
+
+## 👥 Built By
+**Mohammad Subhan Pasha** - Enterprise AI & DevSecOps Platform Engineer.

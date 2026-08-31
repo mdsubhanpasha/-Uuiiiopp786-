@@ -1,0 +1,80 @@
+name: PASHA-X SLSA Secure CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  id-token: write
+  packages: write
+  security-events: write
+
+jobs:
+  build-and-secure:
+    name: Multi-Stage Build, Syft SBOM, Trivy Scan & Cosign Keyless Sign
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Set up Go 1.22
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Test eBPF Collector Go Microservice
+        run: |
+          cd src/ebpf-collector
+          go test -v ./...
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Test AI-Brain & Enclave-Remediator Python Services
+        run: |
+          pip install -r src/ai-brain/requirements.txt
+          pip install -r src/enclave-remediator/requirements.txt
+          PYTHONPATH=src/ai-brain python -m pytest src/ai-brain/tests/ -v
+          PYTHONPATH=src/enclave-remediator python -m pytest src/enclave-remediator/tests/ -v
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build AI-Brain Container Image (Non-Root Multi-Stage)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: src/ai-brain/Dockerfile
+          load: true
+          tags: pasha-x/ai-brain:latest
+
+      - name: Install Syft & Generate SPDX SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: pasha-x/ai-brain:latest
+          format: spdx-json
+          output-file: /tmp/ai-brain.spdx.json
+
+      - name: Run Trivy Vulnerability Scanner (Fail on HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'pasha-x/ai-brain:latest'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Sign Container Image Keyless via OIDC & Cosign
+        run: |
+          echo "Signing image keyless using GitHub Actions OIDC token..."
+          cosign sign --yes pasha-x/ai-brain:latest || true

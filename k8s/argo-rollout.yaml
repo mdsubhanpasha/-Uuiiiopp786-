@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: pasha-x-workload
+  namespace: prod
+  labels:
+    app.kubernetes.io/name: pasha-x-workload
+    app.kubernetes.io/part-of: pasha-x-governance
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    canary:
+      steps:
+        - setWeight: 20
+        - pause: { duration: 10s }
+        - setWeight: 50
+        - pause: { duration: 10s }
+      canaryService: pasha-x-canary-svc
+      stableService: pasha-x-stable-svc
+  selector:
+    matchLabels:
+      app: pasha-x-workload
+  template:
+    metadata:
+      labels:
+        app: pasha-x-workload
+    spec:
+      runtimeClassName: kata-qemu
+      containers:
+        - name: app
+          image: pasha-x/confidential-app:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+          ports:
+            - containerPort: 8080
+              name: http
