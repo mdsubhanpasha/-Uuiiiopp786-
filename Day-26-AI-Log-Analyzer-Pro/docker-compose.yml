@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # AI Log Analyzer Pro App Service
+  log-analyzer-app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    container_name: ai_log_analyzer_app
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REMEDIATION_SCRIPT_PATH=/app/scripts/remediate.sh
+    volumes:
+      - ./scripts:/app/scripts:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - monitoring_net
+
+  # Prometheus Server
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: prometheus_server
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - monitoring_net
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - monitoring_net
+
+  # Logstash
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.1
+    container_name: logstash
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    depends_on:
+      - elasticsearch
+    networks:
+      - monitoring_net
+
+  # Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.1
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - monitoring_net
+
+networks:
+  monitoring_net:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  es_data:
