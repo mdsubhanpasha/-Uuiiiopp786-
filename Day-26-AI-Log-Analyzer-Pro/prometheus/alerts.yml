@@ -1,0 +1,51 @@
+# ==============================================================================
+# Prometheus Alerting Rules for Log Anomaly Detection & Monitoring
+# Day 26 - AI Log Analyzer Pro
+# ==============================================================================
+
+groups:
+  - name: ai_log_analyzer_alerts
+    rules:
+      # Alert when 5xx HTTP error rate exceeds 10 errors within 1 minute
+      - alert: High5xxRate
+        expr: increase(log_analyzer_logs_parsed_total{log_type="nginx_access"}[1m]) > 10 and increase(log_analyzer_anomalies_detected_total{anomaly_type="5xx_spike"}[1m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: nginx-web
+        annotations:
+          summary: "High 5xx HTTP Error Rate Detected"
+          description: "Nginx web server is experiencing > 10 5xx errors per minute. Triggering scale_up auto-remediation."
+
+      # Alert on OOMKilled events in Kubernetes / Docker logs
+      - alert: OOMKilled
+        expr: increase(log_analyzer_anomalies_detected_total{anomaly_type="oom_killed"}[1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          service: k8s-cluster
+        annotations:
+          summary: "Out Of Memory (OOM) Event Detected"
+          description: "Application container was terminated due to OOMKilled condition. Auto-remediation restarting pod."
+
+      # Alert on Pod CrashLoopBackOff states
+      - alert: PodCrashLooping
+        expr: increase(log_analyzer_anomalies_detected_total{anomaly_type="crash_loop_backoff"}[1m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: k8s-cluster
+        annotations:
+          summary: "Kubernetes Pod CrashLoopBackOff Detected"
+          description: "Pod is stuck in CrashLoopBackOff restart loop. Auto-remediation triggering container restart."
+
+      # Alert on Disk Full or low disk space conditions
+      - alert: DiskSpaceRunningLow
+        expr: increase(log_analyzer_anomalies_detected_total{anomaly_type="disk_full"}[1m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "Disk Space Full Warning"
+          description: "Log parser identified Disk Full error entries. Auto-remediation running cleanup script."

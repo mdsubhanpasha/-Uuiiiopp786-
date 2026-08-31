@@ -1,0 +1,135 @@
+// ==============================================================================
+// DevSecOps Declarative Pipeline - Day 26 AI Log Analyzer Pro
+// ==============================================================================
+
+pipeline {
+    agent any
+
+    environment {
+        // Application & Repository Meta
+        APP_NAME        = "ai-log-analyzer-pro"
+        IMAGE_TAG       = "${BUILD_NUMBER}"
+
+        // AWS & ECR Configuration
+        AWS_REGION      = env.AWS_REGION ?: "us-east-1"
+        AWS_ACCOUNT_ID  = env.AWS_ACCOUNT_ID ?: "123456789012"
+        ECR_URL         = env.ECR_URL ?: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        FULL_IMAGE_NAME = "${ECR_URL}/${APP_NAME}:${IMAGE_TAG}"
+        LATEST_IMAGE    = "${ECR_URL}/${APP_NAME}:latest"
+
+        // SonarQube Scanner Configuration
+        SONAR_SCANNER_HOME = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+        timeout(time: 1, unit: 'HOURS')
+        timestamps()
+    }
+
+    stages {
+        // Stage 1: Checkout Source Code
+        stage('Checkout Source Code') {
+            steps {
+                echo "==> [Stage 1/6] Checking out source code..."
+                checkout scm
+                script {
+                    echo "Git commit: ${env.GIT_COMMIT ?: 'Local Workspace'}"
+                }
+            }
+        }
+
+        // Stage 2: SonarQube Code Quality Analysis
+        stage('SonarQube Security Scan') {
+            steps {
+                echo "==> [Stage 2/6] Executing SonarQube SAST & Code Quality Scan..."
+                script {
+                    withSonarQubeEnv('SonarQubeServer') {
+                        sh """
+                            ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
+                              -Dsonar.projectKey=${APP_NAME} \
+                              -Dsonar.sources=app \
+                              -Dsonar.host.url=${env.SONAR_HOST_URL ?: 'http://sonarqube:9000'}
+                        """
+                    }
+                }
+            }
+        }
+
+        // Stage 3: Build Docker Image
+        stage('Build Docker Image') {
+            steps {
+                echo "==> [Stage 3/6] Building Docker Container Image..."
+                script {
+                    dir('app') {
+                        sh "docker build -t ${APP_NAME}:${IMAGE_TAG} -t ${FULL_IMAGE_NAME} -t ${LATEST_IMAGE} ."
+                    }
+                    echo "Docker image ${FULL_IMAGE_NAME} built successfully."
+                }
+            }
+        }
+
+        // Stage 4: Trivy Vulnerability Scan
+        stage('Trivy Security Scan') {
+            steps {
+                echo "==> [Stage 4/6] Running Trivy Vulnerability Scan..."
+                script {
+                    sh """
+                        echo "--- Trivy Container Vulnerability Scan Summary ---"
+                        trivy image --severity HIGH,CRITICAL --no-progress ${FULL_IMAGE_NAME} || true
+
+                        echo "--- Enforcing Security Gate (Failing pipeline if HIGH/CRITICAL found) ---"
+                        trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress ${FULL_IMAGE_NAME}
+                    """
+                }
+            }
+        }
+
+        // Stage 5: Push to AWS ECR
+        stage('Push to AWS ECR') {
+            steps {
+                echo "==> [Stage 5/6] Authenticating and Pushing Container Image to AWS ECR..."
+                script {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-ecr-credentials']]) {
+                        sh """
+                            echo "Authenticating to AWS ECR in region ${AWS_REGION}..."
+                            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_URL}
+
+                            echo "Pushing Docker image ${FULL_IMAGE_NAME}..."
+                            docker push ${FULL_IMAGE_NAME}
+
+                            echo "Pushing latest tag ${LATEST_IMAGE}..."
+                            docker push ${LATEST_IMAGE}
+                        """
+                    }
+                }
+            }
+        }
+
+        // Stage 6: Cleanup
+        stage('Cleanup') {
+            steps {
+                echo "==> [Stage 6/6] Cleaning up workspace and Docker images..."
+                script {
+                    sh """
+                        docker rmi ${APP_NAME}:${IMAGE_TAG} ${FULL_IMAGE_NAME} ${LATEST_IMAGE} || true
+                        docker system prune -f || true
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "DevSecOps Pipeline run completed."
+        }
+        success {
+            echo "SUCCESS: Image ${FULL_IMAGE_NAME} passed all security gates and was pushed to ECR!"
+        }
+        failure {
+            echo "FAILURE: Pipeline failed security check or build stage."
+        }
+    }
+}
