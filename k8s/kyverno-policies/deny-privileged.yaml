@@ -1,0 +1,33 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: deny-privileged-containers
+  annotations:
+    policies.kyverno.io/title: Deny Privileged Containers
+    policies.kyverno.io/category: Pod Security Standards (Baseline & Restricted)
+    policies.kyverno.io/severity: critical
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Privileged containers can break isolation and gain access to the host node.
+      This policy enforces that no privileged containers can run in protected namespaces.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: validate-privileged
+      match:
+        any:
+        - resources:
+            kinds:
+              - Pod
+            namespaces:
+              - "default"
+              - "prod"
+              - "staging"
+      validate:
+        message: "Privileged containers are strictly forbidden in PASHA-X managed clusters."
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  privileged: false

@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pasha-x-confidential-governance
+  namespace: pasha-x
+  labels:
+    app.kubernetes.io/name: pasha-x-confidential
+    app.kubernetes.io/component: governance-plane
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pasha-x-confidential
+  template:
+    metadata:
+      labels:
+        app: pasha-x-confidential
+    spec:
+      runtimeClassName: kata-qemu # Hardware-isolated Kata Confidential Containers runtime
+      containers:
+        - name: ai-brain
+          image: pasha-x/ai-brain:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: OLLAMA_URL
+              value: "http://ollama.pasha-x.svc.cluster.local:11434"
+            - name: PORT
+              value: "8000"
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+          ports:
+            - containerPort: 8000
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+        - name: enclave-remediator
+          image: pasha-x/enclave-remediator:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10002
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: PORT
+              value: "8001"
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+          ports:
+            - containerPort: 8001
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8001
+            initialDelaySeconds: 5
+            periodSeconds: 10
