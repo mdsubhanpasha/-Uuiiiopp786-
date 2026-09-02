@@ -1,25 +1,35 @@
 version: '3.8'
 
 services:
-  api:
-    build: .
+  auron-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auron-corp-137q-api
     ports:
       - "8000:8000"
     environment:
-      - PYTHONUNBUFFERED=1
-    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
-
-  dashboard:
-    build: .
-    ports:
-      - "8501:8501"
-    environment:
-      - PYTHONUNBUFFERED=1
-    command: streamlit run dashboard/app.py --server.port 8501 --server.address 0.0.0.0
+      - PORT=8000
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
     depends_on:
-      - api
+      - qdrant
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
 
-  prometheus:
-    image: prom/prometheus:latest
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: auron-qdrant-vector-db
     ports:
-      - "9090:9090"
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
