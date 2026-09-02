@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #020617;
+  color: #f8fafc;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, #090d16 0%, #020617 100%);
+}
+
+/* Futuristic Glowing Effects */
+.quantum-glow {
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.6), inset 0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.dept-glow {
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+}
+
+.agent-glow {
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+}
+
+/* React Flow custom Dark background override */
+.react-flow__background {
+  background-color: transparent !important;
+}
+
+.react-flow__controls {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+
+.react-flow__controls-button {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.4) !important;
+  fill: #94a3b8 !important;
+}
+
+.react-flow__controls-button:hover {
+  background: rgba(51, 65, 85, 0.5) !important;
+  fill: #38bdf8 !important;
+}
