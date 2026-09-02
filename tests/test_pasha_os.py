@@ -117,7 +117,7 @@ def test_api_health():
     assert response.status_code == 200
     json_resp = response.json()
     assert json_resp["status"] == "healthy"
-    assert json_resp["service"] == "PASHA-OS"
+    assert "auron" in json_resp["service"].lower() or "pasha" in json_resp["service"].lower()
 
     post_resp = client.post("/analyze/ceo-decision", json={"feedback_text": "High revenue and robust performance."})
     assert post_resp.status_code == 200

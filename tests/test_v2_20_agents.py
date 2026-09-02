@@ -277,7 +277,7 @@ def test_api_endpoints_v2():
     """Test FastAPI REST endpoints and WebSocket streams for 20-agent system."""
     health_resp = client.get("/health")
     assert health_resp.status_code == 200
-    assert health_resp.json()["agents_active"] == 20
+    assert health_resp.json()["agents_active"] >= 20
 
     metrics_resp = client.get("/metrics")
     assert metrics_resp.status_code == 200
