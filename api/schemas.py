@@ -1,4 +1,4 @@
-"""FastAPI Pydantic Request/Response Schemas for PASHA-OS 20-Agent REST API."""
+"""FastAPI Pydantic Request/Response Schemas for NAYEEM-FLOW-OS REST API."""
 
 from typing import Dict, List, Any, Optional
 from pydantic import BaseModel, Field
@@ -43,6 +43,21 @@ class MeetingRunInput(BaseModel):
     )
     department: Optional[str] = Field(
         default="ENGINEERING DIVISION", description="Target division for weekly meetings."
+    )
+
+
+class SecurityScanRequest(BaseModel):
+    """Input payload for POST /security/scan."""
+
+    code_repo: Optional[str] = Field(default=".", description="Target repository path or repository URL.")
+
+
+class PolicyCheckRequest(BaseModel):
+    """Input payload for POST /security/policy/check."""
+
+    k8s_manifest: Optional[str] = Field(
+        default="apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nayeem-flow-os\n",
+        description="Kubernetes YAML manifest string to analyze.",
     )
 
 
