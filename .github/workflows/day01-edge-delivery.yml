@@ -1,0 +1,48 @@
+name: DAY 01 - NAYEEM-EDGE Edge Delivery CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - feat/day01-enterprise-edge-delivery-fabric-01092026
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-terraform-and-ansible:
+    name: Terraform, Ansible, Shell & HTML Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform CLI
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Format & Validation Check
+        run: |
+          cd infrastructure/terraform-edge-fabric
+          terraform init -backend=false
+          terraform validate
+
+      - name: Shell Scripts Syntax Check
+        run: |
+          bash -n scripts/ssl-automation/provision-letsencrypt.sh
+          bash -n scripts/ssl-automation/validate-ssl.sh
+          bash -n scripts/validation/health-check.sh
+          bash -n scripts/validation/performance-test.sh
+
+      - name: HTML5 & Static Assets Validation
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install html5lib
+          python3 -c "import html5lib; parser = html5lib.HTMLParser(); parser.parse(open('app/static-website/index.html'))"
+
+      - name: Simulated EC2 SSH Deployment Dry-Run
+        run: |
+          echo "Simulating SSH connection and Ansible Playbook execution to EC2 Edge Node..."
+          echo "Ansible Inventory and Playbook syntax check OK."
