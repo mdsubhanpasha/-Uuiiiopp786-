@@ -1,0 +1,85 @@
+---
+- name: Deploy and Harden Nginx Enterprise Edge Delivery Fabric
+  hosts: all
+  become: yes
+  vars:
+    web_root: /var/www/nayeem-edge
+    nginx_user: www-data
+    domain_name: nayeem-edge.enterprise.io
+
+  tasks:
+    - name: Ensure Nginx and dependencies are installed
+      apt:
+        name:
+          - nginx
+          - certbot
+          - python3-certbot-nginx
+          - apache2-utils
+          - ufw
+        state: present
+        update_cache: yes
+
+    - name: Create static web root directory
+      file:
+        path: "{{ web_root }}"
+        state: directory
+        owner: "{{ nginx_user }}"
+        group: "{{ nginx_user }}"
+        mode: '0755'
+
+    - name: Deploy hardened primary Nginx configuration
+      copy:
+        src: "../../src/core/nginx-configuration-fabric/nginx.conf"
+        dest: /etc/nginx/nginx.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart Nginx
+
+    - name: Deploy site configuration block
+      copy:
+        src: "../../src/core/nginx-configuration-fabric/site.conf"
+        dest: /etc/nginx/sites-available/nayeem-edge.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart Nginx
+
+    - name: Enable Nginx site block
+      file:
+        src: /etc/nginx/sites-available/nayeem-edge.conf
+        dest: /etc/nginx/sites-enabled/nayeem-edge.conf
+        state: link
+      notify: Restart Nginx
+
+    - name: Disable default Nginx site configuration
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Restart Nginx
+
+    - name: Deploy static web application assets
+      copy:
+        src: "../../app/static-website/"
+        dest: "{{ web_root }}/"
+        owner: "{{ nginx_user }}"
+        group: "{{ nginx_user }}"
+        mode: '0644'
+        directory_mode: '0755'
+
+    - name: Validate Nginx configuration syntax
+      command: nginx -t
+      register: nginx_test
+      changed_when: false
+
+    - name: Ensure Nginx service is running and enabled
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
