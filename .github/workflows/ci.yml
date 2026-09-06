@@ -2,9 +2,9 @@ name: PASHA-OS Continuous Integration
 
 on:
   push:
-    branches: [ main, pasha ]
+    branches: [ main, pasha, fix/missing-deps-asgi-correlation-id ]
   pull_request:
-    branches: [ main, pasha ]
+    branches: [ main, pasha, fix/missing-deps-asgi-correlation-id ]
 
 jobs:
   build-test-lint:
