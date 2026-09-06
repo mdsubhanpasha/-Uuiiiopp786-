@@ -1,0 +1,40 @@
+/* Custom styling extensions for Org Messenger Agent */
+
+body {
+    background-color: #0f172a;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* Table row highlight on edit */
+tr.editing-row {
+    background-color: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Low confidence highlight */
+.low-confidence {
+    color: #fbbf24 !important;
+    font-weight: 600;
+}
+
+/* Radio active selection */
+input[type="radio"]:checked + i + span {
+    color: #818cf8;
+}

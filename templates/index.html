@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Org Messenger Agent - 100% Accuracy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
+    <!-- Navbar -->
+    <nav class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between shadow-lg">
+        <div class="flex items-center space-x-3">
+            <div class="p-2 bg-indigo-600 rounded-lg">
+                <i class="fa-solid fa-paper-plane text-white text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-wide text-white">Org Messenger Agent</h1>
+                <p class="text-xs text-slate-400">ZIP PDF Contact Extraction & Bulk Messaging Engine</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1.5">
+                <i class="fa-solid fa-circle-check text-xs"></i> Text PDFs 100% Accuracy
+            </span>
+            <span class="bg-amber-500/10 text-amber-400 text-xs font-semibold px-3 py-1 rounded-full border border-amber-500/20 flex items-center gap-1.5">
+                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Scanned 95% + Manual Verification
+            </span>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        <!-- Step 1 & 2: Upload ZIP & PDF Inventory -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- ZIP Upload Zone -->
+            <div class="md:col-span-2 bg-slate-800 rounded-xl border border-slate-700 p-6 shadow-xl">
+                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <span class="bg-indigo-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">1</span>
+                    Upload PDF ZIP File
+                </h2>
+                <div id="drop-zone" class="border-2 border-dashed border-slate-600 hover:border-indigo-500 transition-colors rounded-xl p-8 text-center cursor-pointer bg-slate-800/50">
+                    <input type="file" id="zip-input" accept=".zip" class="hidden">
+                    <i class="fa-solid fa-file-zipper text-4xl text-indigo-400 mb-3"></i>
+                    <p class="text-sm font-medium text-slate-200 mb-1">Drag & drop your contacts.zip file here</p>
+                    <p class="text-xs text-slate-400 mb-4">ZIP containing text or scanned employee/contact PDFs</p>
+                    <button id="browse-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors inline-flex items-center gap-2">
+                        <i class="fa-solid fa-folder-open"></i> Browse Files
+                    </button>
+                </div>
+            </div>
+
+            <!-- PDF Files Found List -->
+            <div class="bg-slate-800 rounded-xl border border-slate-700 p-6 shadow-xl flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <span class="bg-indigo-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">2</span>
+                        Extracted PDFs
+                    </h2>
+                    <div id="pdf-list" class="space-y-2 max-h-44 overflow-y-auto pr-2 text-xs text-slate-300">
+                        <p class="text-slate-500 italic">No ZIP file uploaded yet...</p>
+                    </div>
+                </div>
+                <button id="extract-btn" disabled class="mt-4 w-full bg-slate-700 text-slate-400 font-semibold py-2 rounded-lg text-xs transition-colors flex items-center justify-center gap-2 cursor-not-allowed">
+                    <i class="fa-solid fa-users-viewfinder"></i> Extract Contacts (Regex + OCR)
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: Contacts Table -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6 shadow-xl space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <span class="bg-indigo-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">3</span>
+                        Extracted Contacts
+                    </h2>
+                    <p class="text-xs text-slate-400">Review, select, or manually edit names and phone numbers to achieve 100% accuracy.</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button id="select-all-btn" class="bg-slate-700 hover:bg-slate-600 text-xs px-3 py-1.5 rounded-lg transition-colors">Select All</button>
+                    <button id="add-contact-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> Add Row
+                    </button>
+                    <span id="contact-count" class="text-xs font-semibold bg-indigo-500/20 text-indigo-300 px-3 py-1.5 rounded-lg border border-indigo-500/30">0 Contacts</span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-700 rounded-lg">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-900/80 text-slate-400 uppercase font-medium border-b border-slate-700">
+                        <tr>
+                            <th class="p-3 w-10 text-center"><input type="checkbox" id="master-checkbox" checked></th>
+                            <th class="p-3">Name</th>
+                            <th class="p-3">Phone (E.164)</th>
+                            <th class="p-3">Source PDF</th>
+                            <th class="p-3">Confidence</th>
+                            <th class="p-3 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contacts-table-body" class="divide-y divide-slate-700/60">
+                        <tr>
+                            <td colspan="6" class="p-6 text-center text-slate-500 italic">No contacts extracted. Upload a ZIP file to start.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Step 4 & 5: Message & Channel Configuration -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Message Template -->
+            <div class="bg-slate-800 rounded-xl border border-slate-700 p-6 shadow-xl space-y-4">
+                <h2 class="text-lg font-semibold flex items-center gap-2">
+                    <span class="bg-indigo-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">4</span>
+                    Message Template
+                </h2>
+                <textarea id="message-text" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-slate-500" placeholder="Hello {{name}}, meeting tomorrow at 10 AM. Urgent updates for {{phone}}.">Hello {{name}} - Important organization notification regarding your schedule.</textarea>
+                <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-700/80">
+                    <p class="text-xs font-semibold text-slate-400 mb-1">Live Preview:</p>
+                    <p id="message-preview" class="text-xs text-indigo-300 italic">Hello Contact - Important organization notification regarding your schedule.</p>
+                </div>
+            </div>
+
+            <!-- Channel Selector & API Keys -->
+            <div class="bg-slate-800 rounded-xl border border-slate-700 p-6 shadow-xl space-y-4">
+                <h2 class="text-lg font-semibold flex items-center gap-2">
+                    <span class="bg-indigo-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">5</span>
+                    Channel & API Configuration
+                </h2>
+
+                <!-- Channel Radio Buttons -->
+                <div class="grid grid-cols-3 gap-3">
+                    <label class="cursor-pointer border border-slate-700 rounded-lg p-3 flex flex-col items-center justify-center bg-slate-900 hover:border-indigo-500 transition-colors">
+                        <input type="radio" name="channel" value="fast2sms" checked class="hidden channel-radio">
+                        <i class="fa-solid fa-comment-sms text-xl text-indigo-400 mb-1"></i>
+                        <span class="text-xs font-medium">Fast2SMS</span>
+                    </label>
+                    <label class="cursor-pointer border border-slate-700 rounded-lg p-3 flex flex-col items-center justify-center bg-slate-900 hover:border-indigo-500 transition-colors">
+                        <input type="radio" name="channel" value="whatsapp" class="hidden channel-radio">
+                        <i class="fa-brands fa-whatsapp text-xl text-emerald-400 mb-1"></i>
+                        <span class="text-xs font-medium">WhatsApp</span>
+                    </label>
+                    <label class="cursor-pointer border border-slate-700 rounded-lg p-3 flex flex-col items-center justify-center bg-slate-900 hover:border-indigo-500 transition-colors">
+                        <input type="radio" name="channel" value="telegram" class="hidden channel-radio">
+                        <i class="fa-brands fa-telegram text-xl text-sky-400 mb-1"></i>
+                        <span class="text-xs font-medium">Telegram</span>
+                    </label>
+                </div>
+
+                <!-- API Key Inputs -->
+                <div id="api-config-fields" class="space-y-3 pt-2">
+                    <input type="text" id="fast2sms-key" placeholder="Fast2SMS API Key (Optional for dry-run)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6: Dispatch & Progress Bar -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6 shadow-xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold flex items-center gap-2">
+                    <span class="bg-indigo-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">6</span>
+                    Bulk Dispatch Execution
+                </h2>
+                <button id="send-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-6 py-2.5 rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-indigo-600/30">
+                    <i class="fa-solid fa-paper-plane"></i> Send Bulk Messages
+                </button>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-900 rounded-full h-3 overflow-hidden border border-slate-700">
+                <div id="progress-bar" class="bg-indigo-500 h-full w-0 transition-all duration-300"></div>
+            </div>
+
+            <!-- Live Dispatch Log -->
+            <div id="live-log" class="bg-slate-900 rounded-lg p-3 text-xs font-mono text-slate-400 h-28 overflow-y-auto border border-slate-800">
+                <p class="text-slate-600">[System] Ready for ZIP upload and message dispatch.</p>
+            </div>
+        </div>
+
+        <!-- Step 7: Delivery Report -->
+        <div id="report-section" class="bg-slate-800 rounded-xl border border-slate-700 p-6 shadow-xl space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-700 pb-4">
+                <div>
+                    <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <span class="bg-indigo-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">7</span>
+                        Delivery Report
+                    </h2>
+                    <p class="text-xs text-slate-400">Execution summary and status tracking per recipient.</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="/report?format=csv" download class="bg-slate-700 hover:bg-slate-600 text-xs px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 text-slate-200">
+                        <i class="fa-solid fa-file-csv text-emerald-400"></i> Download CSV
+                    </a>
+                    <a href="/report?format=excel" download class="bg-slate-700 hover:bg-slate-600 text-xs px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 text-slate-200">
+                        <i class="fa-solid fa-file-excel text-emerald-400"></i> Download Excel
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats Badge Cards -->
+            <div class="grid grid-cols-4 gap-4 text-center">
+                <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700">
+                    <p class="text-slate-400 text-xs">Total</p>
+                    <p id="stat-total" class="text-lg font-bold text-slate-100">0</p>
+                </div>
+                <div class="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20">
+                    <p class="text-emerald-400 text-xs">Delivered</p>
+                    <p id="stat-delivered" class="text-lg font-bold text-emerald-400">0</p>
+                </div>
+                <div class="bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">
+                    <p class="text-rose-400 text-xs">Failed</p>
+                    <p id="stat-failed" class="text-lg font-bold text-rose-400">0</p>
+                </div>
+                <div class="bg-amber-500/10 p-3 rounded-lg border border-amber-500/20">
+                    <p class="text-amber-400 text-xs">Invalid</p>
+                    <p id="stat-invalid" class="text-lg font-bold text-amber-400">0</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
