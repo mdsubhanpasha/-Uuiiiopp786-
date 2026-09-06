@@ -7,7 +7,11 @@ import sys
 import time
 from typing import List, Optional
 
-from asgi_correlation_id import CorrelationIdMiddleware, correlation_id
+try:
+    from asgi_correlation_id import CorrelationIdMiddleware, correlation_id
+except ImportError:
+    CorrelationIdMiddleware = None
+    correlation_id = None
 from fastapi import FastAPI, Query, Request, Response, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel, Field
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -40,7 +44,8 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
             "%Y-%m-%dT%H:%M:%SZ", time.gmtime(record.created)
         )
         log_record["level"] = record.levelname
-        log_record["correlation_id"] = correlation_id.get() or "N/A"
+        cid = correlation_id.get() if correlation_id is not None else "N/A"
+        log_record["correlation_id"] = cid or "N/A"
 
 
 formatter = CustomJsonFormatter(
@@ -72,11 +77,12 @@ app = FastAPI(
 )
 
 # 4. Middleware Setup
-app.add_middleware(
-    CorrelationIdMiddleware,
-    header_name="X-Request-ID",
-    update_request_header=True,
-)
+if CorrelationIdMiddleware is not None:
+    app.add_middleware(
+        CorrelationIdMiddleware,
+        header_name="X-Request-ID",
+        update_request_header=True,
+    )
 
 Instrumentator().instrument(app).expose(app)
 
