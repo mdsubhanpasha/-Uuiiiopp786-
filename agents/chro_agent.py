@@ -1,8 +1,18 @@
-"""CHRO Agent for human resources, hiring strategy, performance matrix, and XGBoost attrition prediction."""
+"""CHRO Agent for human resources, hiring strategy, performance matrix, and XGBoost attrition prediction.
+
+Provides safe fallback if XGBoost is not installed.
+"""
 
 from typing import Dict, List, Any
 import numpy as np
-import xgboost as xgb
+
+try:
+    import xgboost as xgb
+    HAS_XGBOOST = True
+except ImportError:
+    xgb = None
+    HAS_XGBOOST = False
+
 from agents.base_agent import BaseAgent
 
 
@@ -10,7 +20,7 @@ class CHROAgent(BaseAgent):
     """Chief Human Resources Officer Autonomous Agent."""
 
     def __init__(self) -> None:
-        """Initialize CHRO Agent with a pretrained XGBoost attrition model."""
+        """Initialize CHRO Agent with a pretrained XGBoost attrition model or mock model."""
         super().__init__(
             agent_name="CHRO Agent",
             role="Hiring Strategy, Performance Matrix, Workforce Analytics & Attrition",
@@ -19,7 +29,7 @@ class CHROAgent(BaseAgent):
         self._init_model()
 
     def _init_model(self) -> None:
-        """Initialize and fit a baseline XGBoost model on synthetic HR data."""
+        """Initialize and fit a baseline XGBoost model on synthetic HR data or mock."""
         np.random.seed(42)
         X_dummy = np.random.rand(100, 4)
         X_dummy[:, 0] *= 10
@@ -29,11 +39,14 @@ class CHROAgent(BaseAgent):
 
         y_dummy = ((X_dummy[:, 1] < 0.4) | (X_dummy[:, 0] < 1.5)).astype(int)
 
-        self.model = xgb.XGBClassifier(n_estimators=10, max_depth=3, random_state=42, eval_metric="logloss")
-        self.model.fit(X_dummy, y_dummy)
+        if HAS_XGBOOST and xgb is not None:
+            self.model = xgb.XGBClassifier(n_estimators=10, max_depth=3, random_state=42, eval_metric="logloss")
+            self.model.fit(X_dummy, y_dummy)
+        else:
+            self.model = None
 
     def predict_attrition(self, employee_features: List[List[float]] = None) -> Dict[str, Any]:
-        """Predict employee turnover probabilities using XGBoost model.
+        """Predict employee turnover probabilities using XGBoost model or fallback heuristic.
 
         Args:
             employee_features (List[List[float]], optional): Feature matrix for employees.
@@ -51,22 +64,38 @@ class CHROAgent(BaseAgent):
         research = self.research_tool(query="Tech MNC employee retention hiring strategy performance matrix 2025")
 
         X_arr = np.array(employee_features)
-        probs = self.model.predict_proba(X_arr)[:, 1]
-        probs_list = [round(float(p), 3) for p in probs]
+
+        if HAS_XGBOOST and self.model is not None:
+            probs = self.model.predict_proba(X_arr)[:, 1]
+            probs_list = [round(float(p), 3) for p in probs]
+        else:
+            # Fallback heuristic calculation for attrition probability
+            probs_list = []
+            for row in employee_features:
+                tenure, satisfaction, perf, hours = row[0], row[1], row[2], row[3]
+                p = 0.2
+                if satisfaction < 0.4:
+                    p += 0.4
+                if tenure < 1.0:
+                    p += 0.2
+                if hours > 200:
+                    p += 0.1
+                probs_list.append(round(min(p, 0.95), 3))
+
         high_risk_count = sum(1 for p in probs_list if p > 0.5)
         overall_risk = round(float(np.mean(probs_list)), 2)
 
         workforce_health = "STABLE" if overall_risk < 0.5 else "HIGH_ATTRITION_RISK"
 
         reasoning = (
-            f"Evaluated {len(employee_features)} employee profiles through XGBoost attrition model. "
+            f"Evaluated {len(employee_features)} employee profiles through attrition prediction engine. "
             f"Identified {high_risk_count} high-risk personnel (mean probability: {overall_risk}). "
             f"HR research from {research['source_used']} recommends target performance matrix retention incentives."
         )
 
         return self.format_decision(
             reasoning=reasoning,
-            data_sources=[research["source_used"], "XGBoost Employee Attrition Model"],
+            data_sources=[research["source_used"], "XGBoost Employee Attrition Model" if HAS_XGBOOST else "Fallback Attrition Model"],
             alternatives_considered=[
                 "Standard annual compensation review",
                 "Targeted retention bonus & career ladder matrix",

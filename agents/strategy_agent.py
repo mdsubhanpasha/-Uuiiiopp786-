@@ -1,10 +1,58 @@
 """CEO Strategy Agent powered by LangGraph StateGraph workflow execution and Tavily/DDG market research.
 
 Acts as THE CEO BRAIN aggregating executive C-Suite signals to reach strategic decisions, vision, and OKRs.
+Provides resilient MockStateGraph if langgraph is not installed.
 """
 
 from typing import TypedDict, Dict, Any
-from langgraph.graph import StateGraph, END
+
+try:
+    from langgraph.graph import StateGraph, END
+    HAS_LANGGRAPH = True
+except ImportError:
+    HAS_LANGGRAPH = False
+    END = "__END__"
+
+    class StateGraph:
+        """Mock StateGraph when langgraph is not installed."""
+
+        def __init__(self, state_schema=None) -> None:
+            self.state_schema = state_schema
+            self.nodes = {}
+            self.edges = []
+            self.entry_point = None
+
+        def add_node(self, name: str, func) -> None:
+            self.nodes[name] = func
+
+        def set_entry_point(self, name: str) -> None:
+            self.entry_point = name
+
+        def add_edge(self, start_key: str, end_key: str) -> None:
+            self.edges.append((start_key, end_key))
+
+        def compile(self):
+            return CompiledMockApp(self)
+
+
+    class CompiledMockApp:
+        """Compiled Mock StateGraph application that executes nodes sequentially."""
+
+        def __init__(self, graph: StateGraph) -> None:
+            self.graph = graph
+
+        def invoke(self, state: Dict[str, Any]) -> Dict[str, Any]:
+            current_state = dict(state)
+            # Execute standard nodes sequentially
+            node_names = ["cfo_node", "cmo_node", "coo_node", "chro_node", "legal_node", "board_decision_node"]
+            for name in node_names:
+                if name in self.graph.nodes:
+                    res = self.graph.nodes[name](current_state)
+                    if isinstance(res, dict):
+                        current_state.update(res)
+            return current_state
+
+
 from agents.base_agent import BaseAgent
 
 
@@ -61,7 +109,7 @@ class CEOAgent(BaseAgent):
         )
 
 
-class CEOState(TypedDict):
+class CEOState(TypedDict, total=False):
     """Type definition for CEO State in LangGraph execution pipeline."""
 
     cfo_signal: Dict[str, Any]
