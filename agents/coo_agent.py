@@ -1,7 +1,17 @@
-"""COO Agent for operations, SOP compliance, process optimization, and supply chain linear programming."""
+"""COO Agent for operations, SOP compliance, process optimization, and supply chain linear programming.
+
+Provides safe fallback if PuLP is not installed.
+"""
 
 from typing import Dict, List, Any
-import pulp
+
+try:
+    import pulp
+    HAS_PULP = True
+except ImportError:
+    pulp = None
+    HAS_PULP = False
+
 from agents.base_agent import BaseAgent
 
 
@@ -17,7 +27,7 @@ class COOAgent(BaseAgent):
         )
 
     def optimize_supply_chain(self, demands: List[float] = None, costs: List[float] = None) -> Dict[str, Any]:
-        """Optimize supply chain allocation and costs using PuLP linear programming.
+        """Optimize supply chain allocation and costs using PuLP linear programming or fallback calculation.
 
         Args:
             demands (List[float], optional): Node demand requirements.
@@ -32,29 +42,35 @@ class COOAgent(BaseAgent):
         research = self.research_tool(query="Global supply chain optimization linear programming SOP standards")
 
         n = min(len(demands), len(costs))
-        prob = pulp.LpProblem("Supply_Chain_Optimization", pulp.LpMinimize)
 
-        x = [pulp.LpVariable(f"x_{i}", lowBound=0) for i in range(n)]
-        prob += pulp.lpSum([costs[i] * x[i] for i in range(n)])
+        if HAS_PULP and pulp is not None:
+            prob = pulp.LpProblem("Supply_Chain_Optimization", pulp.LpMinimize)
 
-        for i in range(n):
-            prob += x[i] >= demands[i]
+            x = [pulp.LpVariable(f"x_{i}", lowBound=0) for i in range(n)]
+            prob += pulp.lpSum([costs[i] * x[i] for i in range(n)])
 
-        prob.solve(pulp.PULP_CBC_CMD(msg=False))
+            for i in range(n):
+                prob += x[i] >= demands[i]
 
-        allocations = [float(pulp.value(x[i])) for i in range(n)]
-        total_cost = float(pulp.value(prob.objective)) if prob.objective else 0.0
-        status_str = pulp.LpStatus[prob.status]
+            prob.solve(pulp.PULP_CBC_CMD(msg=False))
+
+            allocations = [float(pulp.value(x[i])) for i in range(n)]
+            total_cost = float(pulp.value(prob.objective)) if prob.objective else 0.0
+            status_str = pulp.LpStatus[prob.status]
+        else:
+            allocations = [float(demands[i]) for i in range(n)]
+            total_cost = sum(demands[i] * costs[i] for i in range(n))
+            status_str = "Optimal"
 
         reasoning = (
             f"Formulated LP cost minimization problem across {n} nodes with total demand {sum(demands)} units. "
-            f"PuLP solver achieved status '{status_str}' with minimal total cost of ${total_cost:,.2f}. "
+            f"Solver achieved status '{status_str}' with minimal total cost of ${total_cost:,.2f}. "
             f"Operational research from {research['source_used']} confirms SOP optimization strategy."
         )
 
         return self.format_decision(
             reasoning=reasoning,
-            data_sources=[research["source_used"], "PuLP CBC Linear Solver Engine"],
+            data_sources=[research["source_used"], "PuLP CBC Linear Solver Engine" if HAS_PULP else "Fallback Linear Solver"],
             alternatives_considered=[
                 "Fixed manual warehouse allocation",
                 "Heuristic greedy nearest-node routing",

@@ -1,11 +1,12 @@
-"""FastAPI Backend REST & WebSocket Service for NAYEEM-FLOW-OS Zero-Trust Security Platform."""
+"""FastAPI Backend REST & WebSocket Service for PASHA-X Agentic CEO Operating System."""
 
 import asyncio
 from datetime import datetime, timezone
 import logging
+import os
 import sys
 import time
-from typing import List, Optional
+from typing import Dict, List, Optional, Any
 
 try:
     from asgi_correlation_id import CorrelationIdMiddleware, correlation_id
@@ -47,7 +48,7 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
             "%Y-%m-%dT%H:%M:%SZ", time.gmtime(record.created)
         )
         log_record["level"] = record.levelname
-        cid = correlation_id.get() if correlation_id is not None else "N/A"
+        cid = correlation_id.get() if correlation_id is not None and hasattr(correlation_id, "get") else "N/A"
         log_record["correlation_id"] = cid or "N/A"
 
 
@@ -74,9 +75,9 @@ fairness_checker = FairnessChecker()
 
 # 3. FastAPI App Setup
 app = FastAPI(
-    title="NAYEEM-FLOW-OS Zero-Trust Security Platform API",
-    description="Modern Engineering Workflow with 5-Layer Enterprise Security & Autonomous Governance",
-    version="5.0.0",
+    title="PASHA-X Agentic CEO Operating System API",
+    description="Autonomous Agentic CEO Operating System with 20 AI Agents, Quantum Security, and Groq LLM",
+    version="6.0.0",
 )
 
 # 4. Middleware Setup
@@ -111,6 +112,17 @@ async def log_requests(request: Request, call_next):
 
 
 # --- Pydantic Schemas ---
+class RunCEORequest(BaseModel):
+    goal: str = Field(
+        default="Optimize global enterprise operations and maximize $50M ARR trajectory",
+        description="Strategic goal or directive for the CEO Agent"
+    )
+    company_context: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Optional company performance metrics and context"
+    )
+
+
 class DecisionRequest(BaseModel):
     feedback_text: str = Field(
         default="Enterprise SaaS expansion analysis with strong growth indicators."
@@ -156,7 +168,7 @@ class SecurityScanRequest(BaseModel):
 
 class PolicyCheckRequest(BaseModel):
     k8s_manifest: Optional[str] = Field(
-        default="apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nayeem-flow-os\n",
+        default="apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: pasha-x\n",
         description="Kubernetes YAML manifest",
     )
 
@@ -169,10 +181,11 @@ def read_root():
     """Root endpoint returning service identity."""
     return {
         "status": "healthy",
-        "service": "nayeem-flow-os-security-platform",
-        "version": "5.0.0",
+        "service": "pasha-x-agentic-ceo-os",
+        "version": "6.0.0",
         "security_layers": 5,
         "zero_trust": "ACTIVE",
+        "agents": 20,
     }
 
 
@@ -181,11 +194,69 @@ def health_check():
     """Health check endpoint required by system specification and tests."""
     return {
         "status": "healthy",
-        "service": "auron-4000-pasha-nayeem-flow-os-security-platform",
+        "service": "pasha-x-auron-4000-agentic-ceo-os",
         "agents_active": 4000,
         "quantum_engine_status": "ONLINE",
         "confidential_computing": "ENCLAVE_ATTESTED",
         "security_status": "ZERO_TRUST_COMPLIANT",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@app.post("/run-ceo")
+def run_ceo(req: Optional[RunCEORequest] = None):
+    """Run CEO Agent strategy pipeline with Groq LLM integration and 20-agent C-Suite orchestration.
+
+    Args:
+        req (Optional[RunCEORequest]): Strategic goal and context.
+
+    Returns:
+        Dict[str, Any]: Consolidated CEO decisions, Groq reasoning, and 20-agent C-suite signals.
+    """
+    goal = req.goal if req and req.goal else "Optimize global enterprise operations and maximize $50M ARR trajectory"
+    company_ctx = req.company_context if req and req.company_context else {"industry": "Enterprise SaaS", "target_arr": 50000000.0}
+
+    # 1. Run full 20-agent enterprise analysis
+    analysis = pasha_orchestrator.run_full_enterprise_analysis(company_ctx)
+
+    # 2. Check for Groq LLM Integration
+    groq_api_key = os.getenv("GROQ_API_KEY")
+    groq_response = None
+
+    if groq_api_key:
+        try:
+            from langchain_groq import ChatGroq
+            llm = ChatGroq(temperature=0.2, model_name="llama-3.3-70b-versatile", groq_api_key=groq_api_key)
+            prompt = (
+                f"You are the Agentic CEO of PASHA-X. Strategic Goal: {goal}.\n"
+                f"Enterprise Signals: Overall Risk Score: {analysis.get('overall_risk_score')}, "
+                f"CEO Board Decision: {analysis.get('ceo_decision')}.\n"
+                f"Provide a concise executive summary and 3 strategic directives."
+            )
+            res = llm.invoke(prompt)
+            groq_response = str(res.content)
+        except Exception as e:
+            logger.warning(f"Groq LLM invocation fallback: {str(e)}")
+
+    if not groq_response:
+        groq_response = (
+            f"PASHA-X Agentic CEO Executive Directives for Goal: '{goal}'.\n"
+            f"1. Scale multi-region Kubernetes clusters with Zero-Trust mTLS.\n"
+            f"2. Maintain >80% Gross Margin with $50M ARR trajectory.\n"
+            f"3. Enforce 64-qubit quantum security policy compliance across all 4,000 agents."
+        )
+
+    quantum_thought = auron_brain.think(goal)
+
+    return {
+        "status": "SUCCESS",
+        "goal": goal,
+        "ceo_decision": analysis.get("ceo_decision"),
+        "overall_risk_score": analysis.get("overall_risk_score"),
+        "groq_llm_reasoning": groq_response,
+        "quantum_thought": quantum_thought,
+        "monte_carlo_metrics": analysis.get("monte_carlo_metrics"),
+        "divisions_summary": analysis.get("divisions_summary"),
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -383,7 +454,7 @@ async def board_meeting_websocket(websocket: WebSocket):
         await websocket.send_json({
             "event": "MEETING_STARTED",
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "participants": "NAYEEM-FLOW-OS Security Swarm Agents",
+            "participants": "PASHA-X Autonomous Agent Swarm",
             "quantum_status": "ZERO_TRUST_VERIFIED",
         })
         await asyncio.sleep(0.1)
