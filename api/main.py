@@ -14,7 +14,10 @@ except ImportError:
     correlation_id = None
 from fastapi import FastAPI, Query, Request, Response, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel, Field
-from prometheus_fastapi_instrumentator import Instrumentator
+try:
+    from prometheus_fastapi_instrumentator import Instrumentator
+except ImportError:
+    Instrumentator = None
 from pythonjsonlogger import jsonlogger
 
 from core.orchestration import PashaOrchestrator
@@ -84,7 +87,8 @@ if CorrelationIdMiddleware is not None:
         update_request_header=True,
     )
 
-Instrumentator().instrument(app).expose(app)
+if Instrumentator is not None:
+    Instrumentator().instrument(app).expose(app)
 
 
 @app.middleware("http")
