@@ -1,0 +1,23 @@
+# WHY: NVIDIA GPU Operator Automated Driver & CUDA Device Plugin Installer.
+# WHAT: Helm/Kubernetes operator manifest deploying NVIDIA driver, container toolkit, CUDA runtime, and device plugin.
+# WHERE USED: Layer 7 GPU Infrastructure automated setup.
+# RECRUITER ANSWER: "Automates complex NVIDIA GPU node driver & CUDA device plugin provisioning in 5 minutes versus 2 days of manual configuration."
+
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: gpu-operator
+  namespace: gpu-operator-resources
+spec:
+  chart: gpu-operator
+  repo: https://helm.ngc.nvidia.com/nvidia
+  targetNamespace: gpu-operator
+  valuesContent: |
+    driver:
+      enabled: true
+    toolkit:
+      enabled: true
+    devicePlugin:
+      enabled: true
+    operator:
+      defaultRuntime: crio

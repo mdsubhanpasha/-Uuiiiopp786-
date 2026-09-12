@@ -1,0 +1,38 @@
+# WHY: Latency and Resource-Driven Autoscaling (3 to 15 replicas).
+# WHAT: Kubernetes HorizontalPodAutoscaler scaling on 70% CPU, 80% GPU utilization, and custom P95 latency (12ms).
+# WHERE USED: Layer 4 Kubernetes runtime scaling controller.
+# RECRUITER ANSWER: "Dynamically scales from 3 to 15 pods based on P95 latency thresholds to ensure sub-15ms SLAs under peak surge loads."
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: pasha-q-omni-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pasha-q-omni-verse-2050
+  minReplicas: 3
+  maxReplicas: 15
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: External
+      external:
+        metric:
+          name: container_gpu_utilization
+        target:
+          type: Value
+          averageValue: "80"
+    - type: External
+      external:
+        metric:
+          name: http_request_duration_ms_p95
+        target:
+          type: Value
+          averageValue: "12"

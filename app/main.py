@@ -37,7 +37,7 @@ async def read_root(request: Request):
     """
     Renders main dashboard UI.
     """
-    return templates.TemplateResponse("index.html", {"request": request, "app_name": settings.APP_NAME})
+    return templates.TemplateResponse(request=request, name="index.html", context={"app_name": settings.APP_NAME})
 
 @app.post("/upload-zip")
 async def upload_zip(file: UploadFile = File(...)):
