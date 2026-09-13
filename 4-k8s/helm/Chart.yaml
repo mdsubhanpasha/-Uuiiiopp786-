@@ -1,0 +1,11 @@
+# WHY: Helm Chart Metadata Definition.
+# WHAT: Helm Chart specification for PASHA-Q-OMNI-VERSE-2050 unified multi-cloud deployment.
+# WHERE USED: 4-k8s/helm package structure.
+# RECRUITER ANSWER: "Provides single-command Helm lifecycle management across AWS, GCP, and Azure."
+
+apiVersion: v2
+name: pasha-q-omni-verse-2050
+description: Unified Helm Chart for Multi-Cloud Quantum MLOps Platform from 2050
+type: application
+version: 1.0.0
+appVersion: "2050.1.0"

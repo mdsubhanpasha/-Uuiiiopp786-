@@ -1,0 +1,37 @@
+# WHY: GitOps Single Source of Truth for Zero-Downtime Continuous Deployment.
+# WHAT: ArgoCD Application Custom Resource defining auto-sync, self-healing, automated pruning, and drift detection.
+# WHERE USED: Layer 2 GitOps deployment controller in Kubernetes cluster.
+# RECRUITER ANSWER: "Guarantees cluster state matches Git within 30 seconds, providing full compliance auditability and 30-second git-revert rollbacks."
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pasha-q-omni-verse-2050
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/pasha-q-omni-verse-2050.git'
+    targetRevision: HEAD
+    path: '4-k8s/helm'
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

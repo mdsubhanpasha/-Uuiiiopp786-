@@ -1,0 +1,54 @@
+# WHY: Single Value File Controlling All 3 Cloud Deployments.
+# WHAT: Helm values configuration for AWS, GCP, Azure unified deployment parameters.
+# WHERE USED: 4-k8s/helm package values input.
+# RECRUITER ANSWER: "Enables single-point operational configuration for multi-cloud node affinity, Vault integration, and GPU limits."
+
+replicaCount: 3
+
+image:
+  repository: pasha-q-omni-2050
+  tag: latest
+  pullPolicy: IfNotPresent
+
+securityContext:
+  runAsUser: 1001
+  runAsNonRoot: true
+  readOnlyRootFilesystem: true
+
+resources:
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+    nvidia.com/gpu: "1"
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 15
+  targetCPUUtilizationPercentage: 70
+  targetGPUUtilizationPercentage: 80
+  targetP95LatencyMs: 12
+
+vault:
+  enabled: true
+  role: "pasha-q-omni-role"
+  agentAnnotations:
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "pasha-q-omni-role"
+    vault.hashicorp.com/agent-inject-secret-config: "secret/data/pasha-q-omni/config"
+
+cloudProvider:
+  aws:
+    enabled: true
+    region: "us-west-2"
+    nodeSelector:
+      instance-type: "m7g.large"
+  gcp:
+    enabled: true
+    region: "us-west1"
+  azure:
+    enabled: true
+    region: "westus2"

@@ -1,0 +1,40 @@
+# WHY: Prometheus Real-Time Alert Rules for Performance SLAs & Model Drift.
+# WHAT: PrometheusRule manifest defining alerts for GPU memory >90%, latency P95 >15ms, and model drift >5%.
+# WHERE USED: Layer 6 Observability stack monitoring Kubernetes metrics.
+# RECRUITER ANSWER: "Proactively alerts on GPU memory saturation (>90%), SLA latency degradation (>15ms), and MLOps model drift (>5%) to prevent customer impact."
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pasha-q-omni-alerts
+  namespace: monitoring
+spec:
+  groups:
+    - name: pasha_q_omni_mlops_alerts
+      rules:
+        - alert: GPUMemoryHigh
+          expr: container_gpu_memory_used_bytes / container_gpu_memory_total_bytes > 0.90
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "GPU Memory Utilization exceeds 90%"
+            description: "GPU Memory usage is currently at {{ $value | humanizePercentage }} on instance {{ $labels.instance }}."
+
+        - alert: LatencySLAExceeded
+          expr: histogram_quantile(0.95, sum(rate(http_request_duration_ms_bucket[5m])) by (le)) > 15
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "P95 Latency SLA Exceeded (>15ms)"
+            description: "P95 latency has reached {{ $value }}ms, breaching the 12ms target threshold."
+
+        - alert: ModelDriftDetected
+          expr: mlops_model_concept_drift_ratio > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "MLOps Model Drift > 5%"
+            description: "Concept drift metric has exceeded 5% (current: {{ $value }}), triggering auto-retraining pipeline."

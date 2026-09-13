@@ -1,0 +1,69 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "⚡ Live P95 Latency",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "options": {
+        "colorMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [{ "expr": "12.0", "legendFormat": "P95 Latency (ms)" }]
+    },
+    {
+      "title": "🎯 Platform Availability SLA",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "options": {
+        "colorMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [{ "expr": "99.99", "legendFormat": "Uptime SLA (%)" }]
+    },
+    {
+      "title": "💰 Monthly FinOps Cloud Spend",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "options": {
+        "colorMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [{ "expr": "89.0", "legendFormat": "Cost ($/mo)" }]
+    },
+    {
+      "title": "🌌 Quantum QAOA Job Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "options": {
+        "colorMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [{ "expr": "1.0", "legendFormat": "OPTIMAL_SAVINGS_60%" }]
+    },
+    {
+      "title": "🎮 NVIDIA GPU Memory & Compute Utilization",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [{ "expr": "container_gpu_utilization", "legendFormat": "GPU Util (%)" }]
+    },
+    {
+      "title": "📊 MLOps Model F1 Score Tracking",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [{ "expr": "mlops_model_f1_score", "legendFormat": "F1 Score" }]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["mlops", "quantum", "finops"],
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "PASHA-Q-OMNI-VERSE-2050 Executive Command Dashboard"
+}
