@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-01",
+  "job_id": "lux001",
+  "company": "Lux Bank",
+  "title": "IT Business Analyst",
+  "score": 90.0,
+  "breakdown": {
+    "blocked": false,
+    "domain_score": 66.7,
+    "tech_score": 100.0,
+    "experience_score": 100.0,
+    "location_score": 100.0,
+    "total_score": 90.0,
+    "fit_reason": "Domain match (2 keywords), Tech match (4 keywords), Experience (2-3 years), Location (Luxembourg)"
+  },
+  "job_url": "https://linkedin.com/jobs/lux001",
+  "apply_type": "Easy Apply",
+  "package_folder": "applications/2026-10-01/lux_bank_it_business_analyst",
+  "status": "DRAFTED_PENDING_APPROVAL",
+  "modified_bullets": [
+    "Engineered zero-trust customer churn prediction and sql pipeline for Lux Bank, achieving 94.2% precision and aligning with IT Business Analyst metrics.",
+    "Optimized ai and automated financial workflows, accelerating throughput by 45% and solving key operational hurdles identified in Lux Bank's operations.",
+    "Implemented automated AI tools decision frameworks and executive telemetry, directly streamlining business analysis workflows for 2-5 year experience SLA requirements."
+  ]
+}

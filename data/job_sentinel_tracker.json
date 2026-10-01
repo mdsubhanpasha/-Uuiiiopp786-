@@ -1,0 +1,15 @@
+[
+  {
+    "job_id": "lux001",
+    "company": "Lux Bank",
+    "title": "IT Business Analyst",
+    "score": 90.0,
+    "job_url": "https://linkedin.com/jobs/lux001",
+    "apply_type": "Easy Apply",
+    "status": "READY_FOR_MANUAL_APPLY",
+    "created_at": "2026-10-01T10:12:49.935569",
+    "updated_at": "2026-10-01T10:12:49.935883",
+    "stealth_footprint_clean": true,
+    "manual_final_click_confirmed": false
+  }
+]
