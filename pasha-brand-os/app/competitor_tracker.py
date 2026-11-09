@@ -8,14 +8,17 @@ from app.database import save_competitor_hooks, get_competitor_hooks
 class CompetitorTracker:
     """
     Layer 1 - Competitor Tracker:
-    Scrapes top AI influencers on LinkedIn via Apify LinkedIn Scraper Actor or fallback pattern analyzer.
+    Scrapes top AI influencers on LinkedIn via the Apify LinkedIn posts Actor or fallback pattern analyzer.
     """
 
     def __init__(self, config_path: str = "config.yaml"):
-        self.influencers = self._load_influencers(config_path)
+        # Each influencer entry is either a plain name or {"name": ..., "url": <LinkedIn profile URL>}.
+        entries = self._load_influencers(config_path)
+        self.influencers = [e.get("name", "") if isinstance(e, dict) else str(e) for e in entries]
+        self.profile_urls = [e["url"] for e in entries if isinstance(e, dict) and e.get("url")]
         self.apify_token = os.getenv("APIFY_API_TOKEN", "")
 
-    def _load_influencers(self, config_path: str) -> List[str]:
+    def _load_influencers(self, config_path: str) -> List[Any]:
         if os.path.exists(config_path):
             try:
                 with open(config_path, "r") as f:
@@ -23,7 +26,13 @@ class CompetitorTracker:
                     return cfg.get("influencers", [])
             except Exception as e:
                 logger.warning(f"Failed to read config.yaml for influencers: {e}")
-        return ["Andrew Ng", "Sam Altman", "Subhan Pasha", "Andrej Karpathy", "Ethan Mollick"]
+        return [
+            {"name": "Andrew Ng", "url": "https://www.linkedin.com/in/andrewyng"},
+            "Sam Altman",
+            "Subhan Pasha",
+            {"name": "Andrej Karpathy", "url": "https://www.linkedin.com/in/andrej-karpathy-9a650716"},
+            {"name": "Ethan Mollick", "url": "https://www.linkedin.com/in/emollick"},
+        ]
 
     def scrape_and_analyze_hooks(self, db_path: str = None) -> List[Dict[str, Any]]:
         """
@@ -33,14 +42,16 @@ class CompetitorTracker:
         logger.info(f"Scraping posts from {len(self.influencers)} influencers...")
         extracted_hooks = []
 
-        if self.apify_token:
+        if self.apify_token and self.profile_urls:
             try:
-                url = f"https://api.apify.com/v2/acts/dev_tools~linkedin-post-scraper/run-sync-get-dataset-items?token={self.apify_token}"
-                res = requests.post(url, json={"profiles": self.influencers, "limit": 10}, timeout=20)
+                url = f"https://api.apify.com/v2/acts/johnvc~linkedin-posts-api/run-sync-get-dataset-items?token={self.apify_token}"
+                res = requests.post(url, json={"profileUrls": self.profile_urls, "maxPostsPerProfile": 3}, timeout=20)
                 if res.status_code in (200, 201):
                     items = res.json()
                     for item in items:
-                        text = item.get("text", "")
+                        if item.get("error_message") or item.get("error_type"):
+                            continue
+                        text = item.get("text") or ""
                         lines = [l.strip() for l in text.split("\n") if l.strip()]
                         hook_text = lines[0] if lines else text[:100]
                         extracted_hooks.append({
@@ -48,7 +59,7 @@ class CompetitorTracker:
                             "original_post": text,
                             "hook_type": "Data-Driven",
                             "hook_text": hook_text,
-                            "likes": item.get("likesCount", 1500)
+                            "likes": item.get("numLikes", item.get("likesCount", 1500))
                         })
             except Exception as e:
                 logger.error(f"Apify API scrape call failed: {e}. Using intelligent pattern fallback.")
